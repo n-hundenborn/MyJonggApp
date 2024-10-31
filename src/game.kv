@@ -6,19 +6,19 @@
         BoxLayout:
             size_hint_y: 0.15  # 15% for header
             Label:
-                text: "Welcome to the Game"
-                font_size: 24
+                text: "Welcome to the Game!"
+                font_size: self.parent.height * 0.3  # Responsive font size based on parent height
 
         # Body
         BoxLayout:
             id: player_inputs_container
             orientation: 'vertical'
-            size_hint_y: 0.65  # 65% for body
+            size_hint_y: 0.70  # Updated to 70% for body
             # This will be populated dynamically in the Python code
 
         # Footer
         BoxLayout:
-            size_hint_y: 0.20  # 20% for footer
+            size_hint_y: 0.15  # Updated to 15% for footer
             Button:
                 text: "Start Game"
                 on_press: root.start_game(self)
@@ -32,26 +32,24 @@
             size_hint_y: 0.15  # 15% for header
             Label:
                 text: "Scoreboard"
-                font_size: 24
-                Label:
-                    id: wind_label
-                    text: f"Wind der Runde: {root.round_wind}"  # Bind to game property
+                font_size: self.parent.height * 0.3  # Responsive font size based on parent height
+            Label:
+                id: wind_label
+                text: f"Wind der Runde: {root.round_wind}"  # Bind to game property
+                font_size: self.parent.height * 0.2
 
         # Body
         BoxLayout:
             orientation: 'vertical'
-            size_hint_y: 0.65  # 65% for body
+            size_hint_y: 0.70  # Updated to 70% for body
 
             GridLayout:
                 id: scoreboard
                 cols: 3  # Three columns for Wind, Name, Punkte
-                row_default_height: 40
-                row_force_default: True
-                size_hint_y: 0.65
 
         # Footer
         BoxLayout:
-            size_hint_y: 0.20  # 20% for footer
+            size_hint_y: 0.15  # Updated to 15% for footer
             Button:
                 text: "Add Points"
                 on_press: root.go_to_add_points(self)
@@ -65,15 +63,15 @@
             size_hint_y: 0.15  # 15% for header
             Label:
                 text: "Game Over"
-                font_size: 24
+                font_size: self.parent.height * 0.3  # Responsive font size based on parent height
 
         # Body
         BoxLayout:
-            size_hint_y: 0.65  # 65% for body
+            size_hint_y: 0.70  # Updated to 70% for body
 
         # Footer
         BoxLayout:
-            size_hint_y: 0.20  # 20% for footer
+            size_hint_y: 0.15  # Updated to 15% for footer
             Button:
                 text: "Back to Start"
                 on_press: root.manager.current = 'start'
@@ -87,18 +85,34 @@
             size_hint_y: 0.15  # 15% for header
             Label:
                 text: "Add Points"
-                font_size: 24
+                font_size: self.parent.height * 0.3  # Responsive font size based on parent height
+
+        # Table Header
+        BoxLayout:
+            size_hint_y: 0.1  # Adjust size for header
+            Label:
+                text: "Spieler"
+                font_size: 28
+            Label:
+                text: "Punkte"
+                font_size: 28
+            Label:
+                text: "# Verdopplungen"
+                font_size: 28
+            Label:
+                text: "Gewinner"
+                font_size: 28
 
         # Body
         BoxLayout:
             id: players_layout
             orientation: 'vertical'
-            size_hint_y: 0.65  # 65% for body
+            size_hint_y: 0.70  # Updated to 70% for body
             # Player input fields will be added dynamically in Python
 
         # Footer
         BoxLayout:
-            size_hint_y: 0.20  # 20% for footer
+            size_hint_y: 0.15  # Updated to 15% for footer
             Button:
                 text: "Submit Points"
                 on_press: root.submit_points()

@@ -6,6 +6,7 @@ from kivy.uix.checkbox import CheckBox
 from kivy.properties import ObjectProperty
 from backend.game import Game, Wind
 from logging import getLogger, DEBUG
+from frontend.screens.config import FONT_SIZE_MEDIUM
 import logging
 
 # Configure the default logger to save logs to a file
@@ -38,7 +39,10 @@ class AddPointsScreen(Screen):
 
         for player in self.game.players:
             player_layout = BoxLayout()
-            player_label = Label(text=f"{player.show()}:")
+            player_label = Label(
+                text=f"{player.show()}:",
+                font_size=FONT_SIZE_MEDIUM
+            )
             
             # Player points input
             points_input = TextInput(
@@ -47,7 +51,9 @@ class AddPointsScreen(Screen):
                 write_tab=False,
                 hint_text='0',
                 foreground_color=(0, 0, 0, 1),
-                hint_text_color=(0.5, 0.5, 0.5, 1)
+                hint_text_color=(0.5, 0.5, 0.5, 1),
+                font_size=FONT_SIZE_MEDIUM,
+                halign='right'
             )
             points_input.bind(focus=self.on_focus, on_text_validate=self.on_text_validate)
             
@@ -58,7 +64,9 @@ class AddPointsScreen(Screen):
                 write_tab=False,
                 hint_text='0',
                 foreground_color=(0, 0, 0, 1),
-                hint_text_color=(0.5, 0.5, 0.5, 1)
+                hint_text_color=(0.5, 0.5, 0.5, 1),
+                font_size=FONT_SIZE_MEDIUM,
+                halign='right'
             )
             times_doubled_input.bind(focus=self.on_focus, on_text_validate=self.on_text_validate)
             

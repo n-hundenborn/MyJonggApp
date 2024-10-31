@@ -4,6 +4,7 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty
 from backend.game import Wind, Game
+from frontend.screens.config import RESPONSIVE_FONT_SIZE_SMALL
 
 class StartScreen(Screen):
     """A screen for entering player names and starting the game."""
@@ -19,8 +20,8 @@ class StartScreen(Screen):
         self.player_inputs = []  # Initialize the list to hold player inputs
         for wind in list(Wind):
             player_layout = BoxLayout()
-            player_layout.add_widget(Label(text=str(wind)))
-            player_input = TextInput(multiline=False, write_tab=False)
+            player_layout.add_widget(Label(text=str(wind), font_size=self.height * RESPONSIVE_FONT_SIZE_SMALL))
+            player_input = TextInput(multiline=False, write_tab=False, font_size=self.height * RESPONSIVE_FONT_SIZE_SMALL)
             player_input.bind(on_text_validate=self.on_text_validate)
             self.player_inputs.append(player_input)
             player_layout.add_widget(player_input)

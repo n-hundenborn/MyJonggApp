@@ -41,11 +41,15 @@ class Player:
     wind: Wind
     points: int = 0
 
+    @property
+    def points_str(self) -> str:
+        return f"{self.points:,}".replace(",", ".")
+
     def show(self) -> str:
         return f"[{self.wind}] {self.name}"
 
     def show_with_points(self) -> str:
-        return f"{self.show()} - {self.points} points"
+        return f"{self.show()} - {self.points_str} points"
 
     def add_points(self, points: int) -> None:
         self.points += points
