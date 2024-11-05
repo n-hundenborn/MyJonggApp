@@ -1,5 +1,6 @@
 import logging
 from enum import Enum
+from itertools import combinations
 from logging import getLogger, DEBUG
 from dataclasses import dataclass, field
 
@@ -25,8 +26,9 @@ class Wind(Enum):
         return self.value
 
 def next_wind(current_wind: Wind) -> Wind:
-    """
-    Get the next wind in the sequence. Should never be called with Wind.NORTH.
+    """Get the next wind in the sequence.
+    Args:
+        current_wind (Wind): The current wind position.
     """
     if current_wind == Wind.NORTH:
         raise ValueError("Cannot get next wind from NORTH")
@@ -45,6 +47,14 @@ class Player:
     def points_str(self) -> str:
         return f"{self.points:,}".replace(",", ".")
 
+    def __hash__(self):
+        return hash((self.name, self.wind))
+    
+    def __eq__(self, other):
+        if not isinstance(other, Player):
+            return NotImplemented
+        return self.name == other.name and self.wind == other.wind
+
     def show(self) -> str:
         return f"[{self.wind}] {self.name}"
 
@@ -54,13 +64,75 @@ class Player:
     def add_points(self, points: int) -> None:
         self.points += points
 
+@dataclass
+class Score:
+    """Single score of one Wind at one point in time.
+    
+    Args:
+        player: The player who scored.
+        points: Gross points inputted by player.
+        doublings: How many times the points should be doubled. Defaults to 0.
+        net_points: Points after giving and receiving points from other players.
+        
+    Attributes:
+        calculated_points (int): Points after applying doublings.
+    """
+    player: Player
+    points: int
+    doublings: int = 0
+    net_points: int = None
+
+    @property
+    def calculated_points(self) -> int:
+        return self.points * (2 ** self.doublings)
+    
+    def apply_points(self) -> None:
+        """Apply net points to player."""
+        if self.net_points is None:
+            raise Exception("Net points not calculated yet")
+        self.player.add_points(self.net_points)
 
 @dataclass
 class Round:
     round_wind: Wind
     winner: Wind
-    scores: dict[Wind, int]
+    scores: list[Score]
 
+    def calculate_point_transfers(self) -> dict[Player, int]:
+        """Calculate net scores for the current round."""
+        # helper dict to store net points for each player
+        net_points_all = {sc.player: 0 for sc in self.scores}
+
+        def adjust_net_points(giver: Player, recipient: Player, points: int) -> None:
+            net_points_all[giver] -= points
+            net_points_all[recipient] += points
+
+        for score1, score2 in list(combinations(self.scores, 2)):
+            player1 = score1.player
+            player2 = score2.player
+            # being round_wind will double the points you get/lose
+            points_factor = 1 + int(player1.wind == self.round_wind or player2.wind == self.round_wind)
+            # first handle winner
+            if player1.wind == self.winner:
+                adjust_net_points(giver=player2, recipient=player1, points=points_factor * score1.calculated_points)
+            elif player2.wind == self.winner:
+                adjust_net_points(giver=player2, recipient=player1, points=points_factor * score2.calculated_points)
+            # then handle other 3 players
+            else:
+                adjust_net_points(giver=player2, recipient=player1, points=points_factor * (score1.calculated_points - score2.calculated_points))
+        return net_points_all
+    
+    def apply_points(self, net_points_all: dict[Player, int]) -> None:
+        """Apply net points to score objects."""
+        # apply points to score objects
+        for score in self.scores:
+            score.net_points = net_points_all[score.player]
+            score.apply_points()
+    
+    def process_points(self) -> None:
+        """Process points for the current round."""
+        net_points_all = self.calculate_point_transfers()
+        self.apply_points(net_points_all)
 
 @dataclass
 class Game:
@@ -68,14 +140,11 @@ class Game:
     players: list[Player] = field(default_factory=list)
     round_wind: Wind = Wind.EAST
 
-
     def _get_player_by_wind(self, wind: Wind) -> Player:
         found_players = [player for player in self.players if player.wind == wind]
         return found_players[0] if found_players else None
 
     def _get_next_round_wind(self, last_winner: Wind, last_round_wind: Wind) -> Wind:
-        # The round_wind stays the same until the round_wind loses
-        # draws are not handled as they cannot be selected in the UI
         if last_winner == last_round_wind:
             logger.debug(f"Round wind stays the same: {last_round_wind}")
             return last_round_wind
@@ -84,40 +153,41 @@ class Game:
         logger.debug(f"Next round wind: {next_round_wind}")
         return next_round_wind
 
-    # TODO: set random names if left out
     def set_players(self, player_names: list[str]) -> None:
-        """ Takes list of player names and links them to EAST - SOUTH ... """
+        """Takes list of player names and links them to winds.
+        
+        Args:
+            player_names: List of player names in order of EAST to NORTH.
+        """
         self.players = [Player(name, wind) for name, wind in zip(player_names, Wind)]
 
     def start_new_round(self, winner_wind: Wind) -> None:
-        """ Sets round wind according to the last wind and winning wind """
+        """Sets round wind according to the last wind and winning wind."""
         self.round_wind = self._get_next_round_wind(winner_wind, self.round_wind)
         logger.debug(f"Starting new round with wind: {self.round_wind}")
 
-    def process_points_input(self, points_dict: dict[Wind, tuple[int, int]], winner: Wind) -> None:
+    def process_points_input(self, points_dict: dict[Wind, tuple[int, int]], 
+                           winner: Wind) -> None:
         logger.debug(f"Processing points input: {points_dict} with winner: {winner}")
-        scores = {}
+        scores = []
         for wind, (points, times_doubled) in points_dict.items():
-            points_gross = calculate_gross_points(points, times_doubled)
-            scores[wind] = points_gross
             player = self._get_player_by_wind(wind)
-            player.add_points(points_gross)
+            scores.append(Score(player, points, times_doubled))
 
         current_round = Round(
             round_wind=self.round_wind,
             winner=winner,
             scores=scores
         )
+        current_round.process_points()
         self.rounds.append(current_round)
 
     def is_game_over(self, winner_wind: Wind) -> bool:
-        logger.debug(f"Checking if game is over with winner_wind: {winner_wind} and round_wind: {self.round_wind}")
+        logger.debug(
+            f"Checking if game is over with winner_wind: {winner_wind} "
+            f"and round_wind: {self.round_wind}"
+        )
         return winner_wind != Wind.NORTH and self.round_wind == Wind.NORTH
     
     def get_round_wind_string(self) -> str:
         return str(self.round_wind)
-
-def calculate_gross_points(points: int, times_doubled: int) -> int:
-    return points * (2 ** times_doubled)
-
-
