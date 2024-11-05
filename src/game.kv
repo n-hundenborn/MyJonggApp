@@ -62,16 +62,22 @@
         BoxLayout:
             size_hint_y: 0.15  # 15% for header
             Label:
-                text: "Game Over"
+                text: root.winner_text
                 font_size: self.parent.height * 0.3  # Responsive font size based on parent height
+                bold: True
 
         # Body
         BoxLayout:
-            size_hint_y: 0.70  # Updated to 70% for body
+            orientation: 'vertical'
+            size_hint_y: 0.70  # 70% for body
+
+            GridLayout:
+                id: scoreboard
+                cols: 4  # Four columns for Platz, Wind, Name, Punkte
 
         # Footer
         BoxLayout:
-            size_hint_y: 0.15  # Updated to 15% for footer
+            size_hint_y: 0.15  # 15% for footer
             Button:
                 text: "Back to Start"
                 on_press: root.manager.current = 'start'

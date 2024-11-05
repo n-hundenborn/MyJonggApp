@@ -5,16 +5,19 @@ from logging import getLogger, DEBUG
 from dataclasses import dataclass, field
 
 # Configure the default logger to save logs to a file
-logging.basicConfig(
-    level=DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
-    filename='app.log',  # Specify the log file name
-    filemode='w'  # Overwrite the log file each time the program runs
-)
-
 logger = getLogger(__name__)
 logger.setLevel(DEBUG)
+
+# Create a file handler which logs even debug messages
+file_handler = logging.FileHandler('app.log')
+file_handler.setLevel(DEBUG)
+
+# Create a logging format
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+
+# Add the handlers to the logger
+logger.addHandler(file_handler)
 
 class Wind(Enum):
     EAST = "Osten"
@@ -104,6 +107,7 @@ class Round:
         net_points_all = {sc.player: 0 for sc in self.scores}
 
         def adjust_net_points(giver: Player, recipient: Player, points: int) -> None:
+            logger.debug(f"{giver.name} gives {points} to {recipient.name}")
             net_points_all[giver] -= points
             net_points_all[recipient] += points
 
@@ -114,12 +118,24 @@ class Round:
             points_factor = 1 + int(player1.wind == self.round_wind or player2.wind == self.round_wind)
             # first handle winner
             if player1.wind == self.winner:
-                adjust_net_points(giver=player2, recipient=player1, points=points_factor * score1.calculated_points)
+                adjust_net_points(
+                    giver=player2,
+                    recipient=player1,
+                    points=points_factor * score1.calculated_points
+                )
             elif player2.wind == self.winner:
-                adjust_net_points(giver=player2, recipient=player1, points=points_factor * score2.calculated_points)
+                adjust_net_points(
+                    giver=player1,
+                    recipient=player2,
+                    points=points_factor * score2.calculated_points
+                )
             # then handle other 3 players
             else:
-                adjust_net_points(giver=player2, recipient=player1, points=points_factor * (score1.calculated_points - score2.calculated_points))
+                adjust_net_points(
+                    giver=player2,
+                    recipient=player1,
+                    points=points_factor * (score1.calculated_points - score2.calculated_points)
+                )
         return net_points_all
     
     def apply_points(self, net_points_all: dict[Player, int]) -> None:
@@ -146,11 +162,11 @@ class Game:
 
     def _get_next_round_wind(self, last_winner: Wind, last_round_wind: Wind) -> Wind:
         if last_winner == last_round_wind:
-            logger.debug(f"Round wind stays the same: {last_round_wind}")
+            logger.info(f"Round wind stays the same: {last_round_wind}")
             return last_round_wind
 
         next_round_wind = next_wind(last_round_wind)
-        logger.debug(f"Next round wind: {next_round_wind}")
+        logger.info(f"Next round wind: {next_round_wind}")
         return next_round_wind
 
     def set_players(self, player_names: list[str]) -> None:
@@ -183,11 +199,30 @@ class Game:
         self.rounds.append(current_round)
 
     def is_game_over(self, winner_wind: Wind) -> bool:
+        '''Game is over if current round wind is NORTH and winner is not NORTH.'''
         logger.debug(
             f"Checking if game is over with winner_wind: {winner_wind} "
             f"and round_wind: {self.round_wind}"
         )
-        return winner_wind != Wind.NORTH and self.round_wind == Wind.NORTH
+        return winner_wind != Wind.NORTH and self.round_wind == Wind.EAST
     
     def get_round_wind_string(self) -> str:
         return str(self.round_wind)
+
+    def get_final_standings(self) -> list[tuple[Player, int]]:
+        """Returns list of (player, rank) tuples sorted by points."""
+        # Sort players by points in descending order
+        sorted_players = sorted(self.players, key=lambda p: p.points, reverse=True)
+        
+        # Assign ranks (handling ties)
+        standings = []
+        current_rank = 1
+        previous_points = None
+        
+        for player in sorted_players:
+            if previous_points is not None and player.points < previous_points:
+                current_rank = len(standings) + 1
+            standings.append((player, current_rank))
+            previous_points = player.points
+            
+        return standings
