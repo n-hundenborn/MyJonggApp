@@ -204,7 +204,7 @@ class Game:
             f"Checking if game is over with winner_wind: {winner_wind} "
             f"and round_wind: {self.round_wind}"
         )
-        return winner_wind != Wind.NORTH and self.round_wind == Wind.EAST
+        return winner_wind != Wind.NORTH and self.round_wind == Wind.NORTH
     
     def get_round_wind_string(self) -> str:
         return str(self.round_wind)
