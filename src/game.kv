@@ -1,26 +1,28 @@
+#:import config frontend.screens.config
+
 <StartScreen>:
     BoxLayout:
         orientation: 'vertical'
         
         # Header
         BoxLayout:
-            size_hint_y: 0.15  # 15% for header
+            size_hint_y: 0.15
             Label:
-                text: "Welcome to the Game!"
-                font_size: self.parent.height * 0.3  # Responsive font size based on parent height
+                text: "Neues Spiel neues Glück!"
+                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
 
         # Body
         BoxLayout:
             id: player_inputs_container
             orientation: 'vertical'
-            size_hint_y: 0.70  # Updated to 70% for body
-            # This will be populated dynamically in the Python code
+            size_hint_y: 0.70
 
         # Footer
         BoxLayout:
-            size_hint_y: 0.15  # Updated to 15% for footer
+            size_hint_y: 0.15
             Button:
-                text: "Start Game"
+                text: "Spiel starten"
+                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
                 on_press: root.start_game(self)
 
 <ScoreboardScreen>:
@@ -29,58 +31,29 @@
         
         # Header
         BoxLayout:
-            size_hint_y: 0.15  # 15% for header
+            size_hint_y: 0.15
             Label:
-                text: "Scoreboard"
-                font_size: self.parent.height * 0.3  # Responsive font size based on parent height
-            Label:
-                id: wind_label
-                text: f"Wind der Runde: {root.round_wind}"  # Bind to game property
-                font_size: self.parent.height * 0.2
+                text: f"Punktestand Runde {root.current_round_number}"
+                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
 
         # Body
         BoxLayout:
             orientation: 'vertical'
-            size_hint_y: 0.70  # Updated to 70% for body
+            size_hint_y: 0.70
 
             GridLayout:
                 id: scoreboard
-                cols: 3  # Three columns for Wind, Name, Punkte
+                cols: 3
+                spacing: 0
+                row_default_height: self.parent.height * 0.15
 
         # Footer
         BoxLayout:
-            size_hint_y: 0.15  # Updated to 15% for footer
+            size_hint_y: 0.15
             Button:
-                text: "Add Points"
+                text: "Punkte eingeben"
+                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
                 on_press: root.go_to_add_points(self)
-
-<GameOverScreen>:
-    BoxLayout:
-        orientation: 'vertical'
-        
-        # Header
-        BoxLayout:
-            size_hint_y: 0.15  # 15% for header
-            Label:
-                text: root.winner_text
-                font_size: self.parent.height * 0.3  # Responsive font size based on parent height
-                bold: True
-
-        # Body
-        BoxLayout:
-            orientation: 'vertical'
-            size_hint_y: 0.70  # 70% for body
-
-            GridLayout:
-                id: scoreboard
-                cols: 4  # Four columns for Platz, Wind, Name, Punkte
-
-        # Footer
-        BoxLayout:
-            size_hint_y: 0.15  # 15% for footer
-            Button:
-                text: "Back to Start"
-                on_press: root.manager.current = 'start'
 
 <AddPointsScreen>:
     BoxLayout:
@@ -88,37 +61,72 @@
         
         # Header
         BoxLayout:
-            size_hint_y: 0.15  # 15% for header
+            size_hint_y: 0.15
+            orientation: 'vertical'
             Label:
-                text: "Add Points"
-                font_size: self.parent.height * 0.3  # Responsive font size based on parent height
+                text: f"Eingabe für Runde {root.current_round_number}"
+                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
 
         # Table Header
-        BoxLayout:
-            size_hint_y: 0.1  # Adjust size for header
+        GridLayout:
+            size_hint_y: 0.1
+            cols: 4
             Label:
                 text: "Spieler"
-                font_size: 28
+                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
             Label:
                 text: "Punkte"
-                font_size: 28
+                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
             Label:
                 text: "# Verdopplungen"
-                font_size: 28
+                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
             Label:
                 text: "Gewinner"
-                font_size: 28
+                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
 
         # Body
         BoxLayout:
             id: players_layout
             orientation: 'vertical'
-            size_hint_y: 0.70  # Updated to 70% for body
-            # Player input fields will be added dynamically in Python
+            spacing: 0
+            size_hint_y: 0.60
 
         # Footer
         BoxLayout:
-            size_hint_y: 0.15  # Updated to 15% for footer
+            size_hint_y: 0.15
             Button:
-                text: "Submit Points"
+                text: "Punkte anwenden"
+                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
                 on_press: root.submit_points()
+
+<GameOverScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        
+        # Header
+        BoxLayout:
+            size_hint_y: 0.15
+            Label:
+                text: root.winner_text
+                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
+                bold: True
+
+        # Body
+        BoxLayout:
+            orientation: 'vertical'
+            size_hint_y: 0.70
+
+            GridLayout:
+                id: scoreboard
+                cols: 3
+                spacing: 0
+                row_default_height: self.parent.height * 0.15
+
+        # Footer
+        BoxLayout:
+            size_hint_y: 0.15
+            Button:
+                text: "Neues Spiel"
+                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                on_press: root.manager.current = 'start'
+                disabled: True

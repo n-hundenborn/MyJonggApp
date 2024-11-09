@@ -1,6 +1,33 @@
-RESPONSIVE_FONT_SIZE_SMALL = 0.3
-RESPONSIVE_FONT_SIZE_BIG = 0.5
+from kivy.metrics import dp, sp
+from kivy.core.window import Window
 
-FONT_SIZE_SMALL = 16
-FONT_SIZE_MEDIUM = 22
-FONT_SIZE_BIG = 28
+# Font sizes as ratios of window height
+FONT_SIZE_RATIO_SMALL = 0.025  # 2.5% of window height
+FONT_SIZE_RATIO_MEDIUM = 0.035  # 3.5% of window height
+FONT_SIZE_RATIO_BIG = 0.045    # 4.5% of window height
+
+# Color palette (using RGBA format)
+PRIMARY_COLOR = (0.15, 0.2, 0.3, 1)    # Deep Navy Blue
+SECONDARY_COLOR = (0.2, 0.2, 0.25, 1)  # Dark Slate
+ACCENT_COLOR = (0.3, 0.4, 0.45, 1)     # Muted Teal
+HIGHLIGHT_COLOR = (0.25, 0.25, 0.3, 1)  # Soft Dark Gray
+
+IDIOT_NAMES = [
+    "Dumpfbacke",
+    "Lausbube",
+    "Schluckspecht",
+    "Taugenichts",
+    "Dummkopf",
+    "Schlafmütze",
+    "Pfosten",
+    "Blödmann",
+    "Dödel",
+    "Trottel",
+    "Schluri",
+    "Schlunz",
+    "Schlappohr",
+]
+
+def get_font_size(ratio):
+    """Calculate font size based on window height and given ratio"""
+    return dp(Window.height * ratio)

@@ -3,10 +3,11 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.checkbox import CheckBox
-from kivy.properties import ObjectProperty
+from kivy.properties import ObjectProperty, NumericProperty
 from backend.game import Game, Wind
 from logging import getLogger, DEBUG
-from frontend.screens.config import FONT_SIZE_MEDIUM
+from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, ACCENT_COLOR
+from kivy.graphics import Color, Rectangle
 import logging
 
 # Configure the default logger to save logs to a file
@@ -25,6 +26,7 @@ logger.setLevel(DEBUG)
 class AddPointsScreen(Screen):
     """A screen for adding points to players."""
     game: Game = ObjectProperty(None)
+    current_round_number = NumericProperty(0)
 
     def __init__(self, **kwargs):
         """Initialize the AddPointsScreen."""
@@ -33,15 +35,26 @@ class AddPointsScreen(Screen):
         self.winner_selection = None
 
     def on_enter(self):
+        self.current_round_number = self.game.current_round_number
         self.ids.players_layout.clear_widgets()  # Clear previous widgets
         self.player_inputs = {}
         self.winner_selection = None  # Reset winner selection when entering the screen
+        
+        font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
 
         for player in self.game.players:
             player_layout = BoxLayout()
+            
+            # Add background color for round wind player
+            if player.wind == self.game.round_wind:
+                with player_layout.canvas.before:
+                    Color(*ACCENT_COLOR)
+                    self.rect = Rectangle(pos=player_layout.pos, size=player_layout.size)
+                player_layout.bind(pos=self._update_rect, size=self._update_rect)
+
             player_label = Label(
                 text=f"{player.show()}:",
-                font_size=FONT_SIZE_MEDIUM
+                font_size=font_size
             )
             
             # Player points input
@@ -52,7 +65,7 @@ class AddPointsScreen(Screen):
                 hint_text='0',
                 foreground_color=(0, 0, 0, 1),
                 hint_text_color=(0.5, 0.5, 0.5, 1),
-                font_size=FONT_SIZE_MEDIUM,
+                font_size=font_size,
                 halign='right'
             )
             points_input.bind(focus=self.on_focus, on_text_validate=self.on_text_validate)
@@ -65,7 +78,7 @@ class AddPointsScreen(Screen):
                 hint_text='0',
                 foreground_color=(0, 0, 0, 1),
                 hint_text_color=(0.5, 0.5, 0.5, 1),
-                font_size=FONT_SIZE_MEDIUM,
+                font_size=font_size,
                 halign='right'
             )
             times_doubled_input.bind(focus=self.on_focus, on_text_validate=self.on_text_validate)
@@ -81,10 +94,31 @@ class AddPointsScreen(Screen):
             winner_checkbox.bind(active=lambda instance, value, player_wind=player.wind: self.on_winner_selected(player_wind, value))
             player_layout.add_widget(winner_checkbox)
             
-            self.ids.players_layout.add_widget(player_layout)  # Add to the layout defined in the kv file
+            self.ids.players_layout.add_widget(player_layout)
+
+    def update_fonts(self):
+        """Update all font sizes when window is resized"""
+        font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
+        for wind, (points_input, times_doubled_input) in self.player_inputs.items():
+            points_input.font_size = font_size
+            times_doubled_input.font_size = font_size
+        
+        # Update labels
+        for child in self.ids.players_layout.children:
+            if isinstance(child, BoxLayout):
+                for widget in child.children:
+                    if isinstance(widget, Label):
+                        widget.font_size = font_size
 
     def on_focus(self, instance, value):
-        if value:
+        """
+        Handle focus events for TextInput widgets.
+        Args:
+            instance: The TextInput widget that triggered the focus event
+            value: Boolean indicating focus state (True = gained focus, False = lost focus)
+        """
+        # Only clear if the current value is '0' or empty
+        if value and (instance.text == '0' or instance.text == ''):
             instance.text = ''
         elif not instance.text:
             instance.text = '0'
@@ -127,3 +161,9 @@ class AddPointsScreen(Screen):
         else:
             self.game.start_new_round(winner_wind)
             self.manager.current = 'scoreboard'
+
+    def _update_rect(self, instance, value):
+        """Update the rectangle position and size when the layout changes."""
+        self.rect.pos = instance.pos
+        self.rect.size = instance.size
+

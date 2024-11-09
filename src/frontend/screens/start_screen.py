@@ -4,7 +4,8 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty
 from backend.game import Wind, Game
-from frontend.screens.config import RESPONSIVE_FONT_SIZE_SMALL
+from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_BIG, FONT_SIZE_RATIO_MEDIUM, IDIOT_NAMES
+from random import sample
 
 class StartScreen(Screen):
     """A screen for entering player names and starting the game."""
@@ -18,10 +19,22 @@ class StartScreen(Screen):
         # Populate player inputs dynamically
         player_inputs_container = self.ids.player_inputs_container
         self.player_inputs = []  # Initialize the list to hold player inputs
+        
+        font_size = get_font_size(FONT_SIZE_RATIO_BIG)
+        
         for wind in list(Wind):
             player_layout = BoxLayout()
-            player_layout.add_widget(Label(text=str(wind), font_size=self.height * RESPONSIVE_FONT_SIZE_SMALL))
-            player_input = TextInput(multiline=False, write_tab=False, font_size=self.height * RESPONSIVE_FONT_SIZE_SMALL)
+            player_layout.add_widget(Label(
+                text=str(wind), 
+                font_size=font_size
+            ))
+            player_input = TextInput(
+                multiline=False,
+                write_tab=False,
+                font_size=font_size,
+                halign='left',
+                padding=[10, (self.height - font_size) / 2]  # horizontal padding, vertical padding
+            )
             player_input.bind(on_text_validate=self.on_text_validate)
             self.player_inputs.append(player_input)
             player_layout.add_widget(player_input)
@@ -36,6 +49,31 @@ class StartScreen(Screen):
             self.start_game(instance)
 
     def start_game(self, instance):
-        """Start the game with the entered player names."""        
-        self.game.set_players([input.text for input in self.player_inputs])
+        """Start the game with the entered player names."""
+        
+        # Count empty inputs to determine how many random names we need
+        empty_inputs = sum(1 for input in self.player_inputs if not input.text.strip())
+        # Get random unique names for empty inputs
+        random_names = sample(IDIOT_NAMES, min(empty_inputs, len(IDIOT_NAMES)))
+        random_names_iter = iter(random_names)
+        
+        player_names = []
+        for input in self.player_inputs:
+            name = input.text.strip()
+            if not name:
+                try:
+                    name = next(random_names_iter)
+                except StopIteration:
+                    name = f"Spieler {len(player_names) + 1}"
+            player_names.append(name)
+        
+        self.game.set_players(player_names)
         self.manager.current = 'scoreboard'
+
+    def update_fonts(self):
+        """Update all font sizes when window is resized"""
+        font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
+        
+        # Update TextInputs
+        for input in self.player_inputs:
+            input.font_size = font_size

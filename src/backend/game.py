@@ -1,23 +1,11 @@
-import logging
 from enum import Enum
 from itertools import combinations
-from logging import getLogger, DEBUG
 from dataclasses import dataclass, field
+from backend.helper_functions import setup_logger
 
-# Configure the default logger to save logs to a file
-logger = getLogger(__name__)
-logger.setLevel(DEBUG)
-
-# Create a file handler which logs even debug messages
-file_handler = logging.FileHandler('app.log')
-file_handler.setLevel(DEBUG)
-
-# Create a logging format
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
-
-# Add the handlers to the logger
-logger.addHandler(file_handler)
+# Configure logger
+logger = setup_logger(__name__)
+input_logger = setup_logger("points_input", file_name="points_input.log", verbose=False)
 
 class Wind(Enum):
     EAST = "Osten"
@@ -39,6 +27,13 @@ def next_wind(current_wind: Wind) -> Wind:
     current_index = winds.index(current_wind)
     return winds[current_index + 1]
 
+def get_next_round_wind(winner_wind: Wind, round_wind: Wind) -> Wind:
+    if winner_wind == round_wind:
+        logger.info(f"Round wind stays the same: {round_wind}")
+        return round_wind
+    next_round_wind = next_wind(round_wind)
+    logger.info(f"Next round wind: {next_round_wind}")
+    return next_round_wind
 
 @dataclass
 class Player:
@@ -89,7 +84,7 @@ class Score:
     def calculated_points(self) -> int:
         return self.points * (2 ** self.doublings)
     
-    def apply_points(self) -> None:
+    def give_net_points_to_player(self) -> None:
         """Apply net points to player."""
         if self.net_points is None:
             raise Exception("Net points not calculated yet")
@@ -138,36 +133,31 @@ class Round:
                 )
         return net_points_all
     
-    def apply_points(self, net_points_all: dict[Player, int]) -> None:
+    def apply_net_points(self, net_points_all: dict[Player, int]) -> None:
         """Apply net points to score objects."""
         # apply points to score objects
         for score in self.scores:
             score.net_points = net_points_all[score.player]
-            score.apply_points()
+            score.give_net_points_to_player()
     
     def process_points(self) -> None:
         """Process points for the current round."""
         net_points_all = self.calculate_point_transfers()
-        self.apply_points(net_points_all)
+        self.apply_net_points(net_points_all)
 
 @dataclass
 class Game:
     rounds: list[Round] = field(default_factory=list)
     players: list[Player] = field(default_factory=list)
     round_wind: Wind = Wind.EAST
+    
+    @property
+    def current_round_number(self) -> int:
+        return len(self.rounds) + 1
 
     def _get_player_by_wind(self, wind: Wind) -> Player:
         found_players = [player for player in self.players if player.wind == wind]
         return found_players[0] if found_players else None
-
-    def _get_next_round_wind(self, last_winner: Wind, last_round_wind: Wind) -> Wind:
-        if last_winner == last_round_wind:
-            logger.info(f"Round wind stays the same: {last_round_wind}")
-            return last_round_wind
-
-        next_round_wind = next_wind(last_round_wind)
-        logger.info(f"Next round wind: {next_round_wind}")
-        return next_round_wind
 
     def set_players(self, player_names: list[str]) -> None:
         """Takes list of player names and links them to winds.
@@ -179,15 +169,17 @@ class Game:
 
     def start_new_round(self, winner_wind: Wind) -> None:
         """Sets round wind according to the last wind and winning wind."""
-        self.round_wind = self._get_next_round_wind(winner_wind, self.round_wind)
+        self.round_wind = get_next_round_wind(winner_wind, self.round_wind)
         logger.debug(f"Starting new round with wind: {self.round_wind}")
 
     def process_points_input(self, points_dict: dict[Wind, tuple[int, int]], 
                            winner: Wind) -> None:
         logger.debug(f"Processing points input: {points_dict} with winner: {winner}")
+        input_logger.debug(f"Round {self.current_round_number} with winner: {winner}")
         scores = []
         for wind, (points, times_doubled) in points_dict.items():
             player = self._get_player_by_wind(wind)
+            input_logger.debug(f"{player.name}, {points}, {times_doubled}")
             scores.append(Score(player, points, times_doubled))
 
         current_round = Round(
