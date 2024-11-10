@@ -44,7 +44,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     *[Tree(p) for p in (sdl2.dep_bins + glew.dep_bins)],
-    name='Myjongg Calculator',
+    name='MyJongg Calculator',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
