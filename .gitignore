@@ -10,7 +10,7 @@ ENV/
 .env/
 
 # Kivy build files
-*.kv
+# *.kv
 
 # Logs
 *.log
@@ -26,7 +26,7 @@ eggs/
 *.egg
 
 # PyInstaller
-*.spec
+# *.spec
 
 # Cython debug symbols
 cython_debug/
