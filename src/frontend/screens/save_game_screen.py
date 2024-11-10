@@ -27,6 +27,14 @@ class SaveGameScreen(Screen):
         )
         self.ids.save_container.add_widget(title)
 
+        # Add helper label for filename input
+        filename_helper = Label(
+            text="Bitte geben Sie einen Dateinamen für die Spielaufzeichnung ein:",
+            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM),
+            size_hint_y=0.1
+        )
+        self.ids.save_container.add_widget(filename_helper)
+
         # Generate default filename
         timestamp = datetime.now().strftime("%Y%m%d_%H%M")
         default_filename = f"mahjongg_game_{timestamp}"
@@ -37,6 +45,7 @@ class SaveGameScreen(Screen):
             multiline=False,
             font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM),
             size_hint_y=0.1,
+            hint_text="Dateiname (ohne .xlsx)"
         )
         self.ids.save_container.add_widget(self.filename_input)
 

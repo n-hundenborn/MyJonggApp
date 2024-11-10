@@ -6,8 +6,9 @@ from kivy.uix.checkbox import CheckBox
 from kivy.properties import ObjectProperty, NumericProperty
 from backend.game import Game, Wind
 from backend.helper_functions import setup_logger
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_SMALL, ACCENT_COLOR
+from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_SMALL, ACCENT_COLOR, HIGHLIGHT_COLOR
 from kivy.graphics import Color, Rectangle
+from kivy.animation import Animation
 
 # Configure logger
 logger = setup_logger(__name__)
@@ -79,10 +80,18 @@ class AddPointsScreen(Screen):
             player_layout.add_widget(points_input)
             player_layout.add_widget(times_doubled_input)
             
-            # Add winner checkbox
+            # Add winner checkbox with background for flashing
+            checkbox_container = BoxLayout()
+            with checkbox_container.canvas.before:
+                Color(0, 0, 0, 0)  # Start transparent
+                checkbox_container.rect = Rectangle(pos=checkbox_container.pos, size=checkbox_container.size)
+            checkbox_container.bind(pos=lambda obj, pos: setattr(obj.rect, 'pos', pos),
+                                 size=lambda obj, size: setattr(obj.rect, 'size', size))
+            
             winner_checkbox = CheckBox(group='winner')
             winner_checkbox.bind(active=lambda instance, value, player_wind=player.wind: self.on_winner_selected(player_wind, value))
-            player_layout.add_widget(winner_checkbox)
+            checkbox_container.add_widget(winner_checkbox)
+            player_layout.add_widget(checkbox_container)
             
             self.ids.players_layout.add_widget(player_layout)
 
@@ -132,19 +141,43 @@ class AddPointsScreen(Screen):
     def submit_points(self):
         winner_wind = self.winner_selection
 
-        # Check if a winner has been selected
+        # Check if a winner has been selected with animation feedback
         if winner_wind is None:
-            # Display an error message or handle the error as needed
+            for child in self.ids.players_layout.children:
+                if isinstance(child, BoxLayout):
+                    checkbox_container = next((w for w in child.children if isinstance(w, BoxLayout)), None)
+                    if checkbox_container and hasattr(checkbox_container, 'rect'):
+                        # Flash animation with HIGHLIGHT_COLOR
+                        anim = (
+                            Animation(rgba=(*HIGHLIGHT_COLOR[:3], 0.8), duration=0.2) +  # HIGHLIGHT_COLOR with 0.8 alpha
+                            Animation(rgba=(0, 0, 0, 0), duration=0.2) +                 # Transparent
+                            Animation(rgba=(*HIGHLIGHT_COLOR[:3], 0.8), duration=0.2) +  # HIGHLIGHT_COLOR with 0.8 alpha
+                            Animation(rgba=(0, 0, 0, 0), duration=0.2)                   # Transparent
+                        )
+                        anim.start(checkbox_container.canvas.before.children[0])  # Animate the Color instruction
+            
             logger.error("Error: Please select a winner before submitting.")
-            return  # Prevent submission if no winner is selected
+            return
 
         # Create a dictionary to store points for each player
         points = {}
         for wind, (points_input, times_doubled_input) in self.player_inputs.items():
-            # Convert input text to integer values, defaulting to 0 if empty
-            points_value = int(points_input.text) if points_input.text else 0
-            times_doubled = int(times_doubled_input.text) if times_doubled_input.text else 0
-            points[wind] = (points_value, times_doubled)
+            try:
+                points_value = int(points_input.text) if points_input.text else 0
+                times_doubled = int(times_doubled_input.text) if times_doubled_input.text else 0
+                
+                # Calculate the final value to check if it's too large
+                calculated_value = points_value * (2 ** times_doubled)
+                
+                # Check if the calculated value is too large
+                if calculated_value > 999999999:  # 1 billion - 1
+                    logger.error(f"Error: Resulting points would be too large. Please reduce points or doublings.")
+                    return
+                    
+                points[wind] = (points_value, times_doubled)
+            except OverflowError:
+                logger.error("Error: Calculation would result in a number too large to process")
+                return
         
         # Process the points immediately
         self.game.process_points_input(points, winner_wind)

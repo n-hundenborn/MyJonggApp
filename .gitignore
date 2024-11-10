@@ -12,6 +12,9 @@ ENV/
 # Kivy build files
 # *.kv
 
+# Game Excel files
+*.xlsx
+
 # Logs
 *.log
 

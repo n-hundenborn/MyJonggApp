@@ -6,7 +6,6 @@ name = "pypi"
 [packages]
 kivy = "*"
 kivymd = "*"
-buildozer = "*"
 pyinstaller = "*"
 openpyxl = "*"
 pandas = "*"

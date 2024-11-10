@@ -13,11 +13,17 @@
                 text: "Neues Spiel neues Glück!"
                 font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
 
+        # Explanation Label
+        Label:
+            size_hint_y: 0.1
+            text: "Namen der Spieler eingeben:"
+            font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+
         # Body
         BoxLayout:
             id: player_inputs_container
             orientation: 'vertical'
-            size_hint_y: 0.70
+            size_hint_y: 0.60
 
         # Footer
         BoxLayout:
