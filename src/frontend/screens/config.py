@@ -1,4 +1,4 @@
-from kivy.metrics import dp, sp
+from kivy.metrics import dp
 from kivy.core.window import Window
 
 # Font sizes as ratios of window height

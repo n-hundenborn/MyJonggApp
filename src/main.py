@@ -29,32 +29,43 @@ class GameApp(App):
         self.sm = ScreenManager()
 
         # Add screens that need direct game instance
-        self.sm.add_widget(StartScreen(name='start', game=game_instance))
-        self.sm.add_widget(ScoreboardScreen(name='scoreboard', game=game_instance))
-        self.sm.add_widget(AddPointsScreen(name='add_points', game=game_instance))
-        self.sm.add_widget(RoundSummaryScreen(name='round_summary', game=game_instance))
+        screens = {
+            'start': StartScreen(name='start', game=game_instance),
+            'scoreboard': ScoreboardScreen(name='scoreboard', game=game_instance),
+            'add_points': AddPointsScreen(name='add_points', game=game_instance),
+            'round_summary': RoundSummaryScreen(name='round_summary', game=game_instance),
+            'game_over': GameOverScreen(name='game_over'),
+            'save_game': SaveGameScreen(name='save_game'),
+            'stats': StatsScreen(name='stats')
+        }
+        
+        for screen in screens.values():
+            self.sm.add_widget(screen)
 
-        # Create screens that only need the DataFrame
-        game_over_screen = GameOverScreen(name='game_over')
-        save_game_screen = SaveGameScreen(name='save_game')
-        stats_screen = StatsScreen(name='stats')
+        # Define update_game_data function
+        def update_game_data():
+            for screen_name in ['game_over', 'save_game', 'stats']:
+                if screen_name in screens:
+                    screen = screens[screen_name]
+                    if hasattr(screen, 'update_data'):
+                        screen.update_data(game_instance)
 
-        # Add method to update DataFrame when needed
-        def update_game_data(*args):
-            df = game_instance.create_game_dataframe()
-            game_over_screen.game_data = df
-            save_game_screen.game_data = df
-            stats_screen.game_data = df
+        # Add method to update screens before transition
+        def pre_transition(*args):
+            next_screen = args[1]  # The screen we're transitioning to
+            if next_screen in screens:
+                screen_instance = screens[next_screen]
+                if hasattr(screen_instance, 'update_scoreboard'):
+                    screen_instance.update_scoreboard()
+                if hasattr(screen_instance, 'update_round_wind'):
+                    screen_instance.update_round_wind()
 
-        # Bind the update method to screen transitions
-        self.sm.bind(current=lambda instance, value: 
-            update_game_data() if value in ['game_over', 'save_game', 'stats'] else None
+        # Bind the update methods
+        self.sm.bind(
+            current=lambda instance, value: 
+                update_game_data() if value in ['game_over', 'save_game', 'stats'] else None
         )
-
-        # Add the screens to the manager
-        self.sm.add_widget(game_over_screen)
-        self.sm.add_widget(save_game_screen)
-        self.sm.add_widget(stats_screen)
+        self.sm.bind(current=pre_transition)
 
         return self.sm
 

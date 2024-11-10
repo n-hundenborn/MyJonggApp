@@ -24,6 +24,7 @@ class AddPointsScreen(Screen):
         self.player_inputs = {}
         self.winner_selection = None
         self.calculated_points_labels = {}
+        self.rect = None
 
     def on_enter(self):
         self.current_round_number = self.game.current_round_number
@@ -189,3 +190,9 @@ class AddPointsScreen(Screen):
         """Update the rectangle position and size when the layout changes."""
         self.rect.pos = instance.pos
         self.rect.size = instance.size
+
+    def update_round_wind(self):
+        """Update the display when the round wind changes."""
+        if hasattr(self, 'ids') and hasattr(self.ids, 'players_layout'):
+            self.ids.players_layout.clear_widgets()
+            self.on_enter()

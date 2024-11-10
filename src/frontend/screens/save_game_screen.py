@@ -15,6 +15,7 @@ class SaveGameScreen(Screen):
         super().__init__(**kwargs)
         self.filename_input = None
         self.save_button = None
+        self.is_saved = False  # New flag to track save status
 
     def on_enter(self):
         self.ids.save_container.clear_widgets()
@@ -62,12 +63,25 @@ class SaveGameScreen(Screen):
         self.ids.save_container.add_widget(self.status_label)
 
     def save_game(self):
+        # If already saved, just proceed to stats
+        if self.is_saved:
+            self.proceed_to_stats()
+            return
+
         if self.game_data is None:
             self.save_status = "Keine Spieldaten vorhanden"
             self.status_label.text = self.save_status
             return
 
-        filename = f"{self.filename_input.text}.xlsx"
+        # Use default filename if input is empty
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M")
+        default_filename = f"mahjongg_game_{timestamp}"
+        filename = f"{self.filename_input.text or default_filename}.xlsx"
+        
+        # Disable input field and update with final filename
+        self.filename_input.text = filename
+        self.filename_input.disabled = True
+        
         self.save_status = "Speichere Spielstatistiken..."
         self.status_label.text = self.save_status
         
@@ -79,8 +93,7 @@ class SaveGameScreen(Screen):
                 # Update button text and behavior
                 save_button = self.ids.save_button
                 save_button.text = 'Weiter zu Statistiken'
-                save_button.unbind(on_release=self.save_game)
-                save_button.bind(on_release=lambda x: self.proceed_to_stats())
+                self.is_saved = True  # Mark as saved after successful save
             except Exception as e:
                 self.save_status = f"Fehler beim Speichern: {str(e)}"
                 self.status_label.text = self.save_status

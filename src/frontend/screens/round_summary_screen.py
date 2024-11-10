@@ -10,6 +10,11 @@ class RoundSummaryScreen(Screen):
     """A screen for showing the round summary before confirming points."""
     game: Game = ObjectProperty(None)
     current_round_number = NumericProperty(0)
+    rect = None  # Add this line to store the rectangle reference
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.rect = None  # Add this line to store the rectangle reference
 
     def on_enter(self):
         """Update the display when entering the screen."""
@@ -75,3 +80,9 @@ class RoundSummaryScreen(Screen):
         """Update the rectangle position and size when the layout changes."""
         self.rect.pos = instance.pos
         self.rect.size = instance.size 
+
+    def update_round_wind(self):
+        """Update the display when the round wind changes."""
+        if hasattr(self, 'ids') and hasattr(self.ids, 'summary_layout'):
+            self.ids.summary_layout.clear_widgets()
+            self.on_enter()
