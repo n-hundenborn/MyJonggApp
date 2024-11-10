@@ -1,12 +1,10 @@
 from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty, StringProperty
-from backend.game import Game
 from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM
-from backend.helper_functions import calculate_ranks
 
 class GameOverScreen(Screen):
-    game: Game = ObjectProperty(None)
+    game_data = ObjectProperty(None, force_dispatch=True)
     winner_text = StringProperty("")
 
     def __init__(self, **kwargs):
@@ -25,20 +23,24 @@ class GameOverScreen(Screen):
         self.ids.scoreboard.add_widget(Label(text="Spieler", bold=True, font_size=font_size))
         self.ids.scoreboard.add_widget(Label(text="Punkte", bold=True, font_size=font_size))
 
-        rank_map = calculate_ranks(self.game.players)
-
-        # Sort players by rank for display
-        sorted_players = sorted(self.game.players, key=lambda p: rank_map[p])
-        for player in sorted_players:
-            self.ids.scoreboard.add_widget(Label(text=str(rank_map[player]), font_size=font_size))
-            self.ids.scoreboard.add_widget(Label(text=player.show(), font_size=font_size))
-            self.ids.scoreboard.add_widget(Label(text=player.points_str, font_size=font_size))
+        # Get the last round's data for each player
+        if self.game_data is not None:
+            last_round_data = self.game_data.loc[self.game_data['round'] == self.game_data['round'].max()]
+            
+            # Sort by rank
+            sorted_data = last_round_data.sort_values('rank')
+            
+            for _, row in sorted_data.iterrows():
+                self.ids.scoreboard.add_widget(Label(text=str(row['rank']), font_size=font_size))
+                self.ids.scoreboard.add_widget(Label(text=f"[{row['wind']}] {row['player']}", font_size=font_size))
+                self.ids.scoreboard.add_widget(Label(text=f"{row['running_sum']:,}".replace(",", "."), font_size=font_size))
 
     def update_winner(self):
-        # Get player with rank 1
-        rank_map = calculate_ranks(self.game.players)
-        winner = min(self.game.players, key=lambda p: rank_map[p])
-        self.winner_text = f"{winner.name} gewinnt!"
+        if self.game_data is not None:
+            # Get the last round's data and find the player with rank 1
+            last_round_data = self.game_data.loc[self.game_data['round'] == self.game_data['round'].max()]
+            winner_data = last_round_data.loc[last_round_data['rank'] == 1].iloc[0]
+            self.winner_text = f"{winner_data['player']} gewinnt!"
 
     def update_fonts(self):
         """Update all font sizes when window is resized"""
@@ -46,3 +48,6 @@ class GameOverScreen(Screen):
         for child in self.ids.scoreboard.children:
             if isinstance(child, Label):
                 child.font_size = font_size
+
+    def proceed_to_save_game(self):
+        self.manager.current = 'save_game'

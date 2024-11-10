@@ -2,9 +2,9 @@ from kivy.metrics import dp, sp
 from kivy.core.window import Window
 
 # Font sizes as ratios of window height
-FONT_SIZE_RATIO_SMALL = 0.025  # 2.5% of window height
-FONT_SIZE_RATIO_MEDIUM = 0.035  # 3.5% of window height
-FONT_SIZE_RATIO_BIG = 0.045    # 4.5% of window height
+FONT_SIZE_RATIO_SMALL = 0.02  # 2.5% of window height
+FONT_SIZE_RATIO_MEDIUM = 0.029  # 3.5% of window height
+FONT_SIZE_RATIO_BIG = 0.035    # 4.5% of window height
 
 # Color palette (using RGBA format)
 PRIMARY_COLOR = (0.15, 0.2, 0.3, 1)    # Deep Navy Blue

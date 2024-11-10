@@ -8,6 +8,10 @@ kivy = "*"
 kivymd = "*"
 buildozer = "*"
 pyinstaller = "*"
+openpyxl = "*"
+pandas = "*"
+kivy_garden = "*"
+"kivy-garden.graph" = "*"
 
 [dev-packages]
 

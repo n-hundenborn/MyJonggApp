@@ -2,6 +2,7 @@ from enum import Enum
 from itertools import combinations
 from dataclasses import dataclass, field
 from backend.helper_functions import setup_logger
+import pandas as pd
 
 # Configure logger
 logger = setup_logger(__name__)
@@ -201,20 +202,65 @@ class Game:
     def get_round_wind_string(self) -> str:
         return str(self.round_wind)
 
-    def get_final_standings(self) -> list[tuple[Player, int]]:
-        """Returns list of (player, rank) tuples sorted by points."""
+    def get_standings_from_points(self, points_dict: dict[Player | str, int]) -> list[tuple[Player | str, int]]:
+        """Returns list of (player, rank) tuples sorted by points.
+        
+        Args:
+            points_dict: Dictionary mapping players (or player names) to their points
+        """
         # Sort players by points in descending order
-        sorted_players = sorted(self.players, key=lambda p: p.points, reverse=True)
+        sorted_items = sorted(points_dict.items(), key=lambda x: x[1], reverse=True)
         
         # Assign ranks (handling ties)
         standings = []
         current_rank = 1
         previous_points = None
         
-        for player in sorted_players:
-            if previous_points is not None and player.points < previous_points:
+        for player, points in sorted_items:
+            if previous_points is not None and points < previous_points:
                 current_rank = len(standings) + 1
             standings.append((player, current_rank))
-            previous_points = player.points
+            previous_points = points
             
         return standings
+
+    def create_game_dataframe(self) -> pd.DataFrame:
+        """Creates DataFrame containing round-by-round game data.
+        
+        Returns:
+            DataFrame: Contains all rounds data with running sums and ranks
+        """
+        rounds_data = []
+        running_sums = {player.name: 0 for player in self.players}
+        
+        for round_num, round in enumerate(self.rounds, 1):
+            # First update all running sums for this round
+            round_sums = running_sums.copy()
+            for score in round.scores:
+                round_sums[score.player.name] += score.net_points
+            
+            # Calculate ranks using the shared function
+            standings = self.get_standings_from_points(round_sums)
+            ranks = dict(standings)
+            
+            # Now create the rows with ranks included
+            for score in round.scores:
+                running_sums[score.player.name] += score.net_points
+                
+                round_info = {
+                    'round': round_num,
+                    'round_wind': round.round_wind.value,
+                    'winner': round.winner.value,
+                    'player': score.player.name,
+                    'wind': score.player.wind.value,
+                    'base_points': score.points,
+                    'doublings': score.doublings,
+                    'calculated_points': score.calculated_points,
+                    'net_points': score.net_points,
+                    'running_sum': running_sums[score.player.name],
+                    'rank': ranks[score.player.name]
+                }
+                rounds_data.append(round_info)
+        
+        return pd.DataFrame(rounds_data)
+    

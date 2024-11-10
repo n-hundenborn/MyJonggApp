@@ -5,23 +5,12 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.checkbox import CheckBox
 from kivy.properties import ObjectProperty, NumericProperty
 from backend.game import Game, Wind
-from logging import getLogger, DEBUG
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, ACCENT_COLOR
+from backend.helper_functions import setup_logger
+from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_SMALL, ACCENT_COLOR
 from kivy.graphics import Color, Rectangle
-import logging
 
-# Configure the default logger to save logs to a file
-logging.basicConfig(
-    level=DEBUG,
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    datefmt='%Y-%m-%d %H:%M:%S',
-    filename='app.log',  # Specify the log file name
-    filemode='w'  # Overwrite the log file each time the program runs
-)
-
-logger = getLogger(__name__)
-logger.setLevel(DEBUG)
-
+# Configure logger
+logger = setup_logger(__name__)
 
 class AddPointsScreen(Screen):
     """A screen for adding points to players."""
@@ -33,12 +22,13 @@ class AddPointsScreen(Screen):
         super().__init__(**kwargs)
         self.player_inputs = {}
         self.winner_selection = None
+        self.calculated_points_labels = {}
 
     def on_enter(self):
         self.current_round_number = self.game.current_round_number
-        self.ids.players_layout.clear_widgets()  # Clear previous widgets
+        self.ids.players_layout.clear_widgets()
         self.player_inputs = {}
-        self.winner_selection = None  # Reset winner selection when entering the screen
+        self.winner_selection = None
         
         font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
 
@@ -54,7 +44,7 @@ class AddPointsScreen(Screen):
 
             player_label = Label(
                 text=f"{player.show()}:",
-                font_size=font_size
+                font_size=get_font_size(FONT_SIZE_RATIO_SMALL)
             )
             
             # Player points input
@@ -89,7 +79,7 @@ class AddPointsScreen(Screen):
             player_layout.add_widget(points_input)
             player_layout.add_widget(times_doubled_input)
             
-            # Bind the player wind directly to the checkbox
+            # Add winner checkbox
             winner_checkbox = CheckBox(group='winner')
             winner_checkbox.bind(active=lambda instance, value, player_wind=player.wind: self.on_winner_selected(player_wind, value))
             player_layout.add_widget(winner_checkbox)
@@ -99,16 +89,17 @@ class AddPointsScreen(Screen):
     def update_fonts(self):
         """Update all font sizes when window is resized"""
         font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
+        font_size_small = get_font_size(FONT_SIZE_RATIO_SMALL)
         for wind, (points_input, times_doubled_input) in self.player_inputs.items():
             points_input.font_size = font_size
             times_doubled_input.font_size = font_size
         
-        # Update labels
+        # Update labels with smaller font size
         for child in self.ids.players_layout.children:
             if isinstance(child, BoxLayout):
                 for widget in child.children:
                     if isinstance(widget, Label):
-                        widget.font_size = font_size
+                        widget.font_size = font_size_small
 
     def on_focus(self, instance, value):
         """
@@ -154,16 +145,14 @@ class AddPointsScreen(Screen):
             points_value = int(points_input.text) if points_input.text else 0
             times_doubled = int(times_doubled_input.text) if times_doubled_input.text else 0
             points[wind] = (points_value, times_doubled)
+        
+        # Process the points immediately
         self.game.process_points_input(points, winner_wind)
         
-        if self.game.is_game_over(winner_wind):
-            self.manager.current = 'game_over'
-        else:
-            self.game.start_new_round(winner_wind)
-            self.manager.current = 'scoreboard'
+        # Navigate to summary screen
+        self.manager.current = 'round_summary'
 
     def _update_rect(self, instance, value):
         """Update the rectangle position and size when the layout changes."""
         self.rect.pos = instance.pos
         self.rect.size = instance.size
-
