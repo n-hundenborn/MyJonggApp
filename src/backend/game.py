@@ -151,6 +151,7 @@ class Game:
     rounds: list[Round] = field(default_factory=list)
     players: list[Player] = field(default_factory=list)
     round_wind: Wind = Wind.EAST
+    game_data: pd.DataFrame = None
     
     @property
     def current_round_number(self) -> int:
@@ -261,6 +262,6 @@ class Game:
                     'rank': ranks[score.player.name]
                 }
                 rounds_data.append(round_info)
-        
-        return pd.DataFrame(rounds_data)
+        self.game_data = pd.DataFrame(rounds_data)
+        return self.game_data
     

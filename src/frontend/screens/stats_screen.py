@@ -1,6 +1,7 @@
 from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.uix.button import Button
+import pandas as pd
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, NumericProperty
 from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM
@@ -103,3 +104,7 @@ class StatsScreen(Screen):
         if self.current_page > 0:
             self.current_page -= 1
             self.update_stats()
+
+    def update_data(self, game_data: pd.DataFrame):
+        self.game_data = game_data
+

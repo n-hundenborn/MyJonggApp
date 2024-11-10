@@ -62,6 +62,7 @@ class RoundSummaryScreen(Screen):
         current_round = self.game.rounds[-1]
         
         if self.game.is_game_over(current_round.winner):
+            self.game.game_data = self.game.create_game_dataframe()
             self.manager.current = 'game_over'
         else:
             self.game.start_new_round(current_round.winner)

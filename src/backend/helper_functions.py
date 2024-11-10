@@ -1,7 +1,6 @@
 import logging
 from logging import getLogger, DEBUG
 import pandas as pd
-from datetime import datetime
 
 def setup_logger(logger_name: str, file_name: str = 'app.log', verbose: bool = True) -> logging.Logger:
     """Configure and return a logger that saves logs to a file.

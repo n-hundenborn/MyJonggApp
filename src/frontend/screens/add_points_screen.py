@@ -9,6 +9,7 @@ from backend.helper_functions import setup_logger
 from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_SMALL, ACCENT_COLOR, HIGHLIGHT_COLOR
 from kivy.graphics import Color, Rectangle
 from kivy.animation import Animation
+from frontend.components.popups import show_error
 
 # Configure logger
 logger = setup_logger(__name__)
@@ -150,14 +151,14 @@ class AddPointsScreen(Screen):
                     if checkbox_container and hasattr(checkbox_container, 'rect'):
                         # Flash animation with HIGHLIGHT_COLOR
                         anim = (
-                            Animation(rgba=(*HIGHLIGHT_COLOR[:3], 0.8), duration=0.2) +  # HIGHLIGHT_COLOR with 0.8 alpha
-                            Animation(rgba=(0, 0, 0, 0), duration=0.2) +                 # Transparent
-                            Animation(rgba=(*HIGHLIGHT_COLOR[:3], 0.8), duration=0.2) +  # HIGHLIGHT_COLOR with 0.8 alpha
-                            Animation(rgba=(0, 0, 0, 0), duration=0.2)                   # Transparent
+                            Animation(rgba=(*HIGHLIGHT_COLOR[:3], 0.8), duration=0.2) +
+                            Animation(rgba=(0, 0, 0, 0), duration=0.2) +
+                            Animation(rgba=(*HIGHLIGHT_COLOR[:3], 0.8), duration=0.2) +
+                            Animation(rgba=(0, 0, 0, 0), duration=0.2)
                         )
-                        anim.start(checkbox_container.canvas.before.children[0])  # Animate the Color instruction
+                        anim.start(checkbox_container.canvas.before.children[0])
             
-            logger.error("Error: Please select a winner before submitting.")
+            show_error("Bitte wählen Sie einen Gewinner aus.")
             return
 
         # Create a dictionary to store points for each player
@@ -172,12 +173,12 @@ class AddPointsScreen(Screen):
                 
                 # Check if the calculated value is too large
                 if calculated_value > 999999999:  # 1 billion - 1
-                    logger.error(f"Error: Resulting points would be too large. Please reduce points or doublings.")
+                    show_error("Die berechneten Punkte sind zu groß. Bitte reduzieren Sie die Punkte oder die Verdoppelungen.")
                     return
                     
                 points[wind] = (points_value, times_doubled)
-            except OverflowError:
-                logger.error("Error: Calculation would result in a number too large to process")
+            except (OverflowError, ValueError):
+                show_error("Fehler: Die eingegebene Zahl ist zu groß oder ungültig.")
                 return
         
         # Process the points immediately

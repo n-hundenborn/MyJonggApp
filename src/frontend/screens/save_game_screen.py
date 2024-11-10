@@ -5,7 +5,9 @@ from kivy.properties import ObjectProperty, StringProperty
 from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_BIG
 from backend.helper_functions import save_dataframes_to_excel
 from datetime import datetime
+import pandas as pd
 from kivy.clock import Clock
+from frontend.components.popups import show_error
 
 class SaveGameScreen(Screen):
     game_data = ObjectProperty(None, force_dispatch=True)
@@ -69,8 +71,7 @@ class SaveGameScreen(Screen):
             return
 
         if self.game_data is None:
-            self.save_status = "Keine Spieldaten vorhanden"
-            self.status_label.text = self.save_status
+            show_error("Keine Spieldaten vorhanden")
             return
 
         # Use default filename if input is empty
@@ -95,10 +96,14 @@ class SaveGameScreen(Screen):
                 save_button.text = 'Weiter zu Statistiken'
                 self.is_saved = True  # Mark as saved after successful save
             except Exception as e:
-                self.save_status = f"Fehler beim Speichern: {str(e)}"
-                self.status_label.text = self.save_status
+                show_error(f"Fehler beim Speichern: {str(e)}")
 
         Clock.schedule_once(save_and_update_button, 0.5)
 
     def proceed_to_stats(self):
         self.manager.current = 'stats'
+
+    def update_data(self, game_data: pd.DataFrame):
+        self.game_data = game_data
+
+

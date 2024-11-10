@@ -44,11 +44,12 @@ class GameApp(App):
 
         # Define update_game_data function
         def update_game_data():
+            game_data = game_instance.create_game_dataframe()
             for screen_name in ['game_over', 'save_game', 'stats']:
                 if screen_name in screens:
                     screen = screens[screen_name]
                     if hasattr(screen, 'update_data'):
-                        screen.update_data(game_instance)
+                        screen.update_data(game_data)
 
         # Add method to update screens before transition
         def pre_transition(*args):

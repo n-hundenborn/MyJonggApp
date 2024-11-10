@@ -2,6 +2,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty, StringProperty
 from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM
+import pandas as pd
 
 class GameOverScreen(Screen):
     game_data = ObjectProperty(None, force_dispatch=True)
@@ -51,3 +52,9 @@ class GameOverScreen(Screen):
 
     def proceed_to_save_game(self):
         self.manager.current = 'save_game'
+
+    def update_data(self, game_data: pd.DataFrame):
+        """Update screen with game data"""
+        self.game_data = game_data
+        self.update_scoreboard()
+        self.update_winner()
