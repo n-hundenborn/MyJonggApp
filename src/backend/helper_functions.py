@@ -16,7 +16,7 @@ def setup_logger(logger_name: str, file_name: str = 'app.log', verbose: bool = T
     logger.setLevel(DEBUG)
 
     # Create a file handler which logs even debug messages, overwriting old logs
-    file_handler = logging.FileHandler(file_name, mode='w')
+    file_handler = logging.FileHandler(file_name, mode='w', encoding='utf-8')
     file_handler.setLevel(DEBUG)
 
     # Create console handler for simple logging
