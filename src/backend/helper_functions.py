@@ -71,7 +71,7 @@ def calculate_ranks(items, key_func=lambda x: x.points):
     
     return rank_map
 
-def save_dataframes_to_excel(df: pd.DataFrame, filename: str) -> str:
+def prepare_dataframes_for_saving(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
     """Saves game data to an Excel file with German column names.
     
     Args:
@@ -116,14 +116,18 @@ def save_dataframes_to_excel(df: pd.DataFrame, filename: str) -> str:
     df_standings_german = df_standings.copy()
     df_standings_german.rename(columns=standings_columns, inplace=True)
     
-    # Save both sheets to Excel with adjusted column widths
+    return df_rounds_german, df_standings_german
+
+def save_dataframes_to_excel(df_rounds: pd.DataFrame, df_standings: pd.DataFrame, filename: str) -> str:
+    filename = filename + ".xlsx"
+    
     with pd.ExcelWriter(filename, engine='openpyxl') as writer:
-        df_rounds_german.to_excel(writer, sheet_name='Runden', index=False)
-        df_standings_german.to_excel(writer, sheet_name='Endstand', index=False)
+        df_rounds.to_excel(writer, sheet_name='Runden', index=False)
+        df_standings.to_excel(writer, sheet_name='Endstand', index=False)
         
         # Adjust column widths for Runden sheet
         worksheet = writer.sheets['Runden']
-        for col in 'ABCDEFGHIJK':  # Added one more column
+        for col in 'ABCDEFGHIJK':
             worksheet.column_dimensions[col].width = 18
 
         # Adjust column widths for Endstand sheet

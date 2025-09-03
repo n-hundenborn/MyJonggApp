@@ -3,7 +3,7 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty, StringProperty
 from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_BIG
-from backend.helper_functions import save_dataframes_to_excel
+from backend.helper_functions import prepare_dataframes_for_saving, save_dataframes_to_excel
 from datetime import datetime
 import pandas as pd
 from kivy.clock import Clock
@@ -77,7 +77,7 @@ class SaveGameScreen(Screen):
         # Use default filename if input is empty
         timestamp = datetime.now().strftime("%Y%m%d_%H%M")
         default_filename = f"mahjongg_game_{timestamp}"
-        filename = f"{self.filename_input.text or default_filename}.xlsx"
+        filename = f"{self.filename_input.text or default_filename}"
         
         # Disable input field and update with final filename
         self.filename_input.text = filename
@@ -88,8 +88,9 @@ class SaveGameScreen(Screen):
         
         def save_and_update_button(dt):
             try:
-                file_name = save_dataframes_to_excel(self.game_data, filename)
-                self.save_status = f"Spiel erfolgreich gespeichert als {file_name}"
+                df_rounds, df_standings = prepare_dataframes_for_saving(self.game_data)
+                filename_saved = save_dataframes_to_excel(df_rounds, df_standings, filename)
+                self.save_status = f"Spiel erfolgreich gespeichert als {filename_saved}"
                 self.status_label.text = self.save_status
                 # Update button text and behavior
                 save_button = self.ids.save_button
