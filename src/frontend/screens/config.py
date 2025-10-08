@@ -4,9 +4,9 @@ from kivy.event import EventDispatcher
 from kivy.properties import NumericProperty
 
 # Font sizes as ratios of window height
-FONT_SIZE_RATIO_SMALL = 0.02  # 2.5% of window height
-FONT_SIZE_RATIO_MEDIUM = 0.029  # 3.5% of window height
-FONT_SIZE_RATIO_BIG = 0.035    # 4.5% of window height
+FONT_SIZE_RATIO_SMALL = 0.025  # 2.5% of window height
+FONT_SIZE_RATIO_MEDIUM = 0.035  # 3.5% of window height
+FONT_SIZE_RATIO_BIG = 0.045    # 4.5% of window height
 
 class FontConfig(EventDispatcher):
     """Reactive font configuration that updates when window size changes"""

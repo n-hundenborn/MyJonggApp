@@ -32,8 +32,6 @@ class AddPointsScreen(Screen):
         self.ids.players_layout.clear_widgets()
         self.player_inputs = {}
         self.winner_selection = None
-        
-        font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
 
         for player in self.game.players:
             player_layout = BoxLayout()
@@ -47,7 +45,7 @@ class AddPointsScreen(Screen):
 
             player_label = Label(
                 text=f"{player.show()}:",
-                font_size=get_font_size(FONT_SIZE_RATIO_SMALL)
+                font_size=font_config.font_size_medium
             )
             
             # Player points input
@@ -58,7 +56,7 @@ class AddPointsScreen(Screen):
                 hint_text='0',
                 foreground_color=(0, 0, 0, 1),
                 hint_text_color=(0.5, 0.5, 0.5, 1),
-                font_size=font_size,
+                font_size=font_config.font_size_medium,
                 halign='right'
             )
             points_input.bind(focus=self.on_focus, on_text_validate=self.on_text_validate)
@@ -71,7 +69,7 @@ class AddPointsScreen(Screen):
                 hint_text='0',
                 foreground_color=(0, 0, 0, 1),
                 hint_text_color=(0.5, 0.5, 0.5, 1),
-                font_size=font_size,
+                font_size=font_config.font_size_medium,
                 halign='right'
             )
             times_doubled_input.bind(focus=self.on_focus, on_text_validate=self.on_text_validate)
@@ -103,12 +101,11 @@ class AddPointsScreen(Screen):
             points_input.font_size = font_config.font_size_medium
             times_doubled_input.font_size = font_config.font_size_medium
         
-        # Update labels with smaller font size
         for child in self.ids.players_layout.children:
             if isinstance(child, BoxLayout):
                 for widget in child.children:
                     if isinstance(widget, Label):
-                        widget.font_size = font_config.font_size_small
+                        widget.font_size = font_config.font_size_medium
 
     def on_focus(self, instance, value):
         """
@@ -137,6 +134,9 @@ class AddPointsScreen(Screen):
     def on_winner_selected(self, player_wind: Wind, value: bool) -> None:
         if value:
             self.winner_selection = player_wind
+        else:
+            # Clear winner selection when checkbox is unchecked
+            self.winner_selection = None
 
     def submit_points(self):
         winner_wind = self.winner_selection
