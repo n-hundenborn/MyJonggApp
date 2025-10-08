@@ -4,7 +4,7 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty
 from backend.game import Wind, Game
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_BIG, FONT_SIZE_RATIO_MEDIUM, IDIOT_NAMES
+from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_BIG, FONT_SIZE_RATIO_MEDIUM, IDIOT_NAMES, font_config
 from random import sample
 
 class StartScreen(Screen):
@@ -72,8 +72,12 @@ class StartScreen(Screen):
 
     def update_fonts(self):
         """Update all font sizes when window is resized"""
-        font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
-        
-        # Update TextInputs
-        for input in self.player_inputs:
-            input.font_size = font_size
+        # Update TextInputs and Labels
+        for i, input in enumerate(self.player_inputs):
+            input.font_size = font_config.font_size_medium
+            # Update the corresponding label in the same layout
+            player_layout = input.parent
+            if player_layout and len(player_layout.children) > 1:
+                label = player_layout.children[1]  # Label is typically the first child (shown last due to Kivy ordering)
+                if hasattr(label, 'font_size'):
+                    label.font_size = font_config.font_size_big

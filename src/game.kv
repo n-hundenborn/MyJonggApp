@@ -1,4 +1,4 @@
-#:import config frontend.screens.config
+#:import font_config frontend.screens.config.font_config
 
 <StartScreen>:
     BoxLayout:
@@ -11,13 +11,13 @@
             size_hint_y: 0.15
             Label:
                 text: "Neues Spiel neues Glück!"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
+                font_size: font_config.font_size_big
 
         # Explanation Label
         Label:
             size_hint_y: 0.1
             text: "Namen der Spieler eingeben:"
-            font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+            font_size: font_config.font_size_medium
 
         # Body
         BoxLayout:
@@ -30,7 +30,7 @@
             size_hint_y: 0.15
             Button:
                 text: "Spiel starten"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
                 on_release: root.start_game(self)
 
 <ScoreboardScreen>:
@@ -44,7 +44,7 @@
             size_hint_y: 0.15
             Label:
                 text: f"Punktestand Runde {root.current_round_number}"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
+                font_size: font_config.font_size_big
 
         # Body
         BoxLayout:
@@ -61,7 +61,7 @@
             size_hint_y: 0.15
             Button:
                 text: "Punkte eingeben"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
                 on_release: root.go_to_add_points(self)
 
 <AddPointsScreen>:
@@ -76,7 +76,7 @@
             orientation: 'vertical'
             Label:
                 text: f"Eingabe für Runde {root.current_round_number}"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
+                font_size: font_config.font_size_big
 
         # Table Header
         GridLayout:
@@ -84,16 +84,16 @@
             cols: 4
             Label:
                 text: "Spieler"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
             Label:
                 text: "Punkte"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
             Label:
                 text: "# Verdopplungen"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
             Label:
                 text: "Gewinner"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
 
         # Body
         BoxLayout:
@@ -109,7 +109,7 @@
             spacing: 10
             Button:
                 text: "Punkte berechnen"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
                 on_release: root.submit_points()
 
 <RoundSummaryScreen>:
@@ -123,7 +123,7 @@
             size_hint_y: 0.15
             Label:
                 text: f"Rundenübersicht Runde {root.current_round_number}"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
+                font_size: font_config.font_size_big
 
         # Table Header
         GridLayout:
@@ -131,13 +131,13 @@
             cols: 3
             Label:
                 text: "Spieler"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
             Label:
                 text: "Rundenpunkte"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
             Label:
                 text: "Punkteänderung"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
 
         # Body
         BoxLayout:
@@ -150,7 +150,7 @@
             size_hint_y: 0.15
             Button:
                 text: "Punkte anwenden"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
                 on_release: root.confirm_points()
 
 <GameOverScreen>:
@@ -164,7 +164,7 @@
             size_hint_y: 0.15
             Label:
                 text: root.winner_text
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_BIG)
+                font_size: font_config.font_size_big
                 bold: True
 
         # Body
@@ -182,7 +182,7 @@
             size_hint_y: 0.15
             Button:
                 text: "Spielauswertung"
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
                 on_release: root.proceed_to_save_game()
 
 <SaveGameScreen>:
@@ -203,7 +203,7 @@
             Button:
                 id: save_button
                 text: 'Spiel speichern'
-                font_size: config.get_font_size(config.FONT_SIZE_RATIO_MEDIUM)
+                font_size: font_config.font_size_medium
                 on_release: root.save_game()
 
 <StatsScreen>:

@@ -4,7 +4,7 @@ from kivy.uix.button import Button
 import pandas as pd
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, NumericProperty
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM
+from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, font_config
 
 class StatsScreen(Screen):
     game_data = ObjectProperty(None, force_dispatch=True)
@@ -107,4 +107,19 @@ class StatsScreen(Screen):
 
     def update_data(self, game_data: pd.DataFrame):
         self.game_data = game_data
+
+    def update_fonts(self):
+        """Update all font sizes when window is resized"""
+        # Update all children in stats_container
+        if hasattr(self, 'ids') and hasattr(self.ids, 'stats_container'):
+            for child in self.ids.stats_container.children:
+                if isinstance(child, Label):
+                    child.font_size = font_config.font_size_medium
+                elif isinstance(child, Button):
+                    child.font_size = font_config.font_size_medium
+                elif isinstance(child, BoxLayout):
+                    # Handle navigation buttons layout
+                    for nav_child in child.children:
+                        if isinstance(nav_child, (Label, Button)):
+                            nav_child.font_size = font_config.font_size_medium
 

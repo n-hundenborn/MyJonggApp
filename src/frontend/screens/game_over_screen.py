@@ -1,7 +1,7 @@
 from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty, StringProperty
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM
+from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, font_config
 import pandas as pd
 
 class GameOverScreen(Screen):
@@ -45,10 +45,9 @@ class GameOverScreen(Screen):
 
     def update_fonts(self):
         """Update all font sizes when window is resized"""
-        font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
         for child in self.ids.scoreboard.children:
             if isinstance(child, Label):
-                child.font_size = font_size
+                child.font_size = font_config.font_size_medium
 
     def proceed_to_save_game(self):
         self.manager.current = 'save_game'

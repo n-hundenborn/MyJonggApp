@@ -6,7 +6,7 @@ from kivy.uix.checkbox import CheckBox
 from kivy.properties import ObjectProperty, NumericProperty
 from backend.game import Game, Wind
 from backend.helper_functions import setup_logger
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_SMALL, ACCENT_COLOR, HIGHLIGHT_COLOR
+from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_SMALL, ACCENT_COLOR, HIGHLIGHT_COLOR, font_config
 from kivy.graphics import Color, Rectangle
 from kivy.animation import Animation
 from frontend.components.popups import show_error
@@ -99,18 +99,16 @@ class AddPointsScreen(Screen):
 
     def update_fonts(self):
         """Update all font sizes when window is resized"""
-        font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
-        font_size_small = get_font_size(FONT_SIZE_RATIO_SMALL)
         for wind, (points_input, times_doubled_input) in self.player_inputs.items():
-            points_input.font_size = font_size
-            times_doubled_input.font_size = font_size
+            points_input.font_size = font_config.font_size_medium
+            times_doubled_input.font_size = font_config.font_size_medium
         
         # Update labels with smaller font size
         for child in self.ids.players_layout.children:
             if isinstance(child, BoxLayout):
                 for widget in child.children:
                     if isinstance(widget, Label):
-                        widget.font_size = font_size_small
+                        widget.font_size = font_config.font_size_small
 
     def on_focus(self, instance, value):
         """

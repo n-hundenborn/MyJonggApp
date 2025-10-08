@@ -2,7 +2,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty, StringProperty
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_BIG
+from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_BIG, font_config
 from backend.helper_functions import prepare_dataframes_for_saving, save_dataframes_to_excel
 from datetime import datetime
 import pandas as pd
@@ -106,5 +106,25 @@ class SaveGameScreen(Screen):
 
     def update_data(self, game_data: pd.DataFrame):
         self.game_data = game_data
+
+    def update_fonts(self):
+        """Update all font sizes when window is resized"""
+        # Update dynamic widgets if they exist
+        if hasattr(self, 'filename_input') and self.filename_input:
+            self.filename_input.font_size = font_config.font_size_medium
+        if hasattr(self, 'status_label') and self.status_label:
+            self.status_label.font_size = font_config.font_size_medium
+        
+        # Update all children in save_container
+        if hasattr(self, 'ids') and hasattr(self.ids, 'save_container'):
+            for child in self.ids.save_container.children:
+                if isinstance(child, Label):
+                    # Title gets big font, others get medium font
+                    if child.text == "Spiel speichern":
+                        child.font_size = font_config.font_size_big
+                    else:
+                        child.font_size = font_config.font_size_medium
+                elif isinstance(child, TextInput):
+                    child.font_size = font_config.font_size_medium
 
 

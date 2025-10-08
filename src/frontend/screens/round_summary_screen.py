@@ -3,7 +3,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty, NumericProperty
 from backend.game import Game
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, ACCENT_COLOR
+from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, ACCENT_COLOR, font_config
 from kivy.graphics import Color, Rectangle
 
 class RoundSummaryScreen(Screen):
@@ -70,12 +70,11 @@ class RoundSummaryScreen(Screen):
 
     def update_fonts(self):
         """Update all font sizes when window is resized."""
-        font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
         for child in self.ids.summary_layout.children:
             if isinstance(child, BoxLayout):
                 for widget in child.children:
                     if isinstance(widget, Label):
-                        widget.font_size = font_size
+                        widget.font_size = font_config.font_size_medium
 
     def _update_rect(self, instance, value):
         """Update the rectangle position and size when the layout changes."""

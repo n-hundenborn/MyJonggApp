@@ -4,7 +4,7 @@ from kivy.uix.label import Label
 from kivy.properties import StringProperty, ObjectProperty, NumericProperty
 from kivy.graphics import Color, Rectangle
 from backend.game import Game
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, ACCENT_COLOR
+from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, ACCENT_COLOR, font_config
 from backend.helper_functions import calculate_ranks
 
 class ScoreboardScreen(Screen):
@@ -66,10 +66,9 @@ class ScoreboardScreen(Screen):
 
     def update_fonts(self):
         """Update all font sizes when window is resized"""
-        font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
         for child in self.scoreboard.children:
             if isinstance(child, Label):
-                child.font_size = font_size
+                child.font_size = font_config.font_size_medium
     
     def go_to_add_points(self, instance):
         self.manager.current = 'add_points'
