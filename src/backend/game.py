@@ -152,6 +152,7 @@ class Game:
     players: list[Player] = field(default_factory=list)
     round_wind: Wind = Wind.EAST
     game_data: pd.DataFrame = None
+    game_folder: str = None
     
     @property
     def current_round_number(self) -> int:
@@ -168,6 +169,14 @@ class Game:
             player_names: List of player names in order of EAST to NORTH.
         """
         self.players = [Player(name, wind) for name, wind in zip(player_names, Wind)]
+
+    def set_game_folder(self, folder_path: str) -> None:
+        """Set the folder path where the game file will be saved.
+        
+        Args:
+            folder_path: Path to the folder where the game file should be saved.
+        """
+        self.game_folder = folder_path
 
     def start_new_round(self, winner_wind: Wind) -> None:
         """Sets round wind according to the last wind and winning wind."""

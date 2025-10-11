@@ -1,5 +1,67 @@
 #:import font_config frontend.screens.config.font_config
 
+<WelcomeScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [20, 20, 20, 20]
+        spacing: 20
+        
+        # Header
+        BoxLayout:
+            size_hint_y: 0.2
+            Label:
+                text: "Willkommen zum Myjongg Calculator!"
+                font_size: font_config.font_size_big
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+
+        # Instructions
+        BoxLayout:
+            size_hint_y: 0.15
+            Label:
+                text: "Bitte wählen Sie einen Ordner für die Spielaufzeichnung:"
+                font_size: font_config.font_size_medium
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+
+        # Folder info
+        BoxLayout:
+            size_hint_y: 0.1
+            Label:
+                text: root.folder_info
+                font_size: font_config.font_size_medium
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+
+        # Spacer
+        Widget:
+            size_hint_y: 0.2
+
+        # Buttons
+        BoxLayout:
+            size_hint_y: 0.35
+            orientation: 'vertical'
+            spacing: 20
+            
+            Button:
+                text: "Spielordner auswählen/erstellen"
+                font_size: font_config.font_size_medium
+                on_release: root.select_folder()
+            
+            Button:
+                text: f"Verwende {root.get_default_folder_name()}"
+                font_size: font_config.font_size_medium
+                on_release: root.use_default_folder()
+            
+            Button:
+                text: "Weiter zum Spiel"
+                font_size: font_config.font_size_medium
+                disabled: not root.can_proceed
+                on_release: root.proceed_to_start_screen()
+
 <StartScreen>:
     BoxLayout:
         orientation: 'vertical'

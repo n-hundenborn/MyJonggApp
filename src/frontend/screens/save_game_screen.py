@@ -12,6 +12,7 @@ from frontend.components.popups import show_error
 class SaveGameScreen(Screen):
     game_data = ObjectProperty(None, force_dispatch=True)
     save_status = StringProperty("")
+    game = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -89,7 +90,10 @@ class SaveGameScreen(Screen):
         def save_and_update_button(dt):
             try:
                 df_rounds, df_standings = prepare_dataframes_for_saving(self.game_data)
-                filename_saved = save_dataframes_to_excel(df_rounds, df_standings, filename)
+                # Get folder path from the game instance
+                folder_path = self.game.game_folder if self.game else None
+                
+                filename_saved = save_dataframes_to_excel(df_rounds, df_standings, filename, folder_path)
                 self.save_status = f"Spiel erfolgreich gespeichert als {filename_saved}"
                 self.status_label.text = self.save_status
                 # Update button text and behavior
@@ -99,7 +103,7 @@ class SaveGameScreen(Screen):
             except Exception as e:
                 show_error(f"Fehler beim Speichern: {str(e)}")
 
-        Clock.schedule_once(save_and_update_button, 0.5)
+        Clock.schedule_once(save_and_update_button, 0.1)
 
     def proceed_to_stats(self):
         self.manager.current = 'stats'
