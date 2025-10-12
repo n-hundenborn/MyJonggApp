@@ -4,7 +4,6 @@ from kivy.uix.label import Label
 from kivy.uix.button import Button
 from kivy.properties import ObjectProperty, StringProperty
 from backend.game import Game
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_BIG, FONT_SIZE_RATIO_MEDIUM, font_config
 from datetime import datetime
 import os
 from plyer import filechooser

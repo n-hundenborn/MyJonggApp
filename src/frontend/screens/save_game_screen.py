@@ -2,7 +2,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty, StringProperty
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_BIG, font_config
+from frontend.screens.config import font_config
 from backend.helper_functions import prepare_dataframes_for_saving, save_dataframes_to_excel
 from datetime import datetime
 import pandas as pd
@@ -26,7 +26,7 @@ class SaveGameScreen(Screen):
         # Add title
         title = Label(
             text="Spiel speichern",
-            font_size=get_font_size(FONT_SIZE_RATIO_BIG),
+            font_size=font_config.font_size_big,
             size_hint_y=0.2
         )
         self.ids.save_container.add_widget(title)
@@ -34,7 +34,7 @@ class SaveGameScreen(Screen):
         # Add helper label for filename input
         filename_helper = Label(
             text="Bitte geben Sie einen Dateinamen für die Spielaufzeichnung ein:",
-            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM),
+            font_size=font_config.font_size_medium,
             size_hint_y=0.1
         )
         self.ids.save_container.add_widget(filename_helper)
@@ -47,7 +47,7 @@ class SaveGameScreen(Screen):
         self.filename_input = TextInput(
             text=default_filename,
             multiline=False,
-            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM),
+            font_size=font_config.font_size_medium,
             size_hint_y=0.1,
             hint_text="Dateiname (ohne .xlsx)"
         )
@@ -56,7 +56,7 @@ class SaveGameScreen(Screen):
         # Add status label
         self.status_label = Label(
             text=self.save_status,
-            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM),
+            font_size=font_config.font_size_medium,
             size_hint_y=0.2,
             size_hint_x=0.9,
             halign='center',

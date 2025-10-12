@@ -6,7 +6,7 @@ from kivy.uix.checkbox import CheckBox
 from kivy.properties import ObjectProperty, NumericProperty
 from backend.game import Game, Wind
 from backend.helper_functions import setup_logger
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_SMALL, ACCENT_COLOR, HIGHLIGHT_COLOR, font_config
+from frontend.screens.config import ACCENT_COLOR, HIGHLIGHT_COLOR, font_config
 from kivy.graphics import Color, Rectangle
 from kivy.animation import Animation
 from frontend.components.popups import show_error

@@ -4,7 +4,7 @@ from kivy.uix.label import Label
 from kivy.properties import StringProperty, ObjectProperty, NumericProperty
 from kivy.graphics import Color, Rectangle
 from backend.game import Game
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, ACCENT_COLOR, font_config
+from frontend.screens.config import ACCENT_COLOR, font_config
 from backend.helper_functions import calculate_ranks
 
 class ScoreboardScreen(Screen):
@@ -30,7 +30,7 @@ class ScoreboardScreen(Screen):
         self.scoreboard.clear_widgets()
         self.scoreboard.spacing = 0
 
-        font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
+        font_size = font_config.font_size_medium
 
         # Add headers for the table
         self.scoreboard.add_widget(Label(text="Platz", bold=True, font_size=font_size))
