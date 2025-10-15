@@ -1,7 +1,5 @@
 from kivy.uix.screenmanager import Screen
 from kivy.uix.boxlayout import BoxLayout
-from kivy.uix.label import Label
-from kivy.uix.button import Button
 from kivy.properties import ObjectProperty, StringProperty
 from backend.game import Game
 from datetime import datetime
