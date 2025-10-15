@@ -2,7 +2,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty, StringProperty
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, FONT_SIZE_RATIO_BIG, font_config
+from frontend.screens.config import font_config
 from backend.helper_functions import prepare_dataframes_for_saving, save_dataframes_to_excel
 from datetime import datetime
 import pandas as pd
@@ -12,6 +12,7 @@ from frontend.components.popups import show_error
 class SaveGameScreen(Screen):
     game_data = ObjectProperty(None, force_dispatch=True)
     save_status = StringProperty("")
+    game = ObjectProperty(None)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -25,7 +26,7 @@ class SaveGameScreen(Screen):
         # Add title
         title = Label(
             text="Spiel speichern",
-            font_size=get_font_size(FONT_SIZE_RATIO_BIG),
+            font_size=font_config.font_size_big,
             size_hint_y=0.2
         )
         self.ids.save_container.add_widget(title)
@@ -33,7 +34,7 @@ class SaveGameScreen(Screen):
         # Add helper label for filename input
         filename_helper = Label(
             text="Bitte geben Sie einen Dateinamen für die Spielaufzeichnung ein:",
-            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM),
+            font_size=font_config.font_size_medium,
             size_hint_y=0.1
         )
         self.ids.save_container.add_widget(filename_helper)
@@ -46,7 +47,7 @@ class SaveGameScreen(Screen):
         self.filename_input = TextInput(
             text=default_filename,
             multiline=False,
-            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM),
+            font_size=font_config.font_size_medium,
             size_hint_y=0.1,
             hint_text="Dateiname (ohne .xlsx)"
         )
@@ -55,7 +56,7 @@ class SaveGameScreen(Screen):
         # Add status label
         self.status_label = Label(
             text=self.save_status,
-            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM),
+            font_size=font_config.font_size_medium,
             size_hint_y=0.2,
             size_hint_x=0.9,
             halign='center',
@@ -89,7 +90,10 @@ class SaveGameScreen(Screen):
         def save_and_update_button(dt):
             try:
                 df_rounds, df_standings = prepare_dataframes_for_saving(self.game_data)
-                filename_saved = save_dataframes_to_excel(df_rounds, df_standings, filename)
+                # Get folder path from the game instance
+                folder_path = self.game.game_folder if self.game else None
+                
+                filename_saved = save_dataframes_to_excel(df_rounds, df_standings, filename, folder_path)
                 self.save_status = f"Spiel erfolgreich gespeichert als {filename_saved}"
                 self.status_label.text = self.save_status
                 # Update button text and behavior
@@ -99,7 +103,7 @@ class SaveGameScreen(Screen):
             except Exception as e:
                 show_error(f"Fehler beim Speichern: {str(e)}")
 
-        Clock.schedule_once(save_and_update_button, 0.5)
+        Clock.schedule_once(save_and_update_button, 0.1)
 
     def proceed_to_stats(self):
         self.manager.current = 'stats'

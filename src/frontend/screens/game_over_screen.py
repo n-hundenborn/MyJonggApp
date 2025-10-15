@@ -1,7 +1,7 @@
 from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty, StringProperty
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, font_config
+from frontend.screens.config import font_config
 import pandas as pd
 
 class GameOverScreen(Screen):
@@ -17,7 +17,7 @@ class GameOverScreen(Screen):
 
     def update_scoreboard(self):
         self.ids.scoreboard.clear_widgets()
-        font_size = get_font_size(FONT_SIZE_RATIO_MEDIUM)
+        font_size = font_config.font_size_medium
 
         # Add headers for the table
         self.ids.scoreboard.add_widget(Label(text="Platz", bold=True, font_size=font_size))

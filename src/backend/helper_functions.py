@@ -1,6 +1,7 @@
 import logging
 from logging import getLogger, DEBUG
 import pandas as pd
+import os
 
 def setup_logger(logger_name: str, file_name: str = 'app.log', verbose: bool = True) -> logging.Logger:
     """Configure and return a logger that saves logs to a file.
@@ -118,10 +119,16 @@ def prepare_dataframes_for_saving(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Da
     
     return df_rounds_german, df_standings_german
 
-def save_dataframes_to_excel(df_rounds: pd.DataFrame, df_standings: pd.DataFrame, filename: str) -> str:
+def save_dataframes_to_excel(df_rounds: pd.DataFrame, df_standings: pd.DataFrame, filename: str, folder_path: str = None) -> str:
     filename = filename + ".xlsx"
     
-    with pd.ExcelWriter(filename, engine='openpyxl') as writer:
+    # Use folder_path if provided, otherwise save in current directory
+    if folder_path:
+        full_path = os.path.join(folder_path, filename)
+    else:
+        full_path = filename
+    
+    with pd.ExcelWriter(full_path, engine='openpyxl') as writer:
         df_rounds.to_excel(writer, sheet_name='Runden', index=False)
         df_standings.to_excel(writer, sheet_name='Endstand', index=False)
         
@@ -136,6 +143,6 @@ def save_dataframes_to_excel(df_rounds: pd.DataFrame, df_standings: pd.DataFrame
             worksheet.column_dimensions[col].width = 18
     
     logger = getLogger(__name__)
-    logger.info(f"Game results saved to {filename}")
+    logger.info(f"Game results saved to {full_path}")
     
-    return filename
+    return full_path

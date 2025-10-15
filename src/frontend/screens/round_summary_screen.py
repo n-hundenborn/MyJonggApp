@@ -3,7 +3,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty, NumericProperty
 from backend.game import Game
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, ACCENT_COLOR, font_config
+from frontend.screens.config import ACCENT_COLOR, font_config
 from kivy.graphics import Color, Rectangle
 
 class RoundSummaryScreen(Screen):
@@ -37,22 +37,24 @@ class RoundSummaryScreen(Screen):
                     self.rect = Rectangle(pos=player_layout.pos, size=player_layout.size)
                 player_layout.bind(pos=self._update_rect, size=self._update_rect)
 
+            font_size = font_config.font_size_medium
+
             # Player name
             player_layout.add_widget(Label(
                 text=f"{player.show()}",
-                font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM)
+                font_size=font_size
             ))
 
             # Round points (calculated points)
             player_layout.add_widget(Label(
                 text=str(score.calculated_points),
-                font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM)
+                font_size=font_size
             ))
 
             # Point change
             player_layout.add_widget(Label(
                 text=str(score.net_points),
-                font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM)
+                font_size=font_size
             ))
 
             self.ids.summary_layout.add_widget(player_layout)

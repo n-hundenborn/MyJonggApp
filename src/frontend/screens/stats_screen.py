@@ -4,7 +4,7 @@ from kivy.uix.button import Button
 import pandas as pd
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, NumericProperty
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_MEDIUM, font_config
+from frontend.screens.config import font_config
 
 class StatsScreen(Screen):
     game_data = ObjectProperty(None, force_dispatch=True)
@@ -22,7 +22,7 @@ class StatsScreen(Screen):
     def create_points_over_time_display(self):
         return Label(
             text="Punkteverlauf über Zeit\n\nHier könnte ihre Statistik stehen!",
-            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM)
+            font_size=font_config.font_size_medium
         )
 
     def create_final_standings_display(self):
@@ -35,7 +35,7 @@ class StatsScreen(Screen):
             
         return Label(
             text=text,
-            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM)
+            font_size=font_config.font_size_medium
         )
 
     def create_wins_distribution_display(self):
@@ -48,7 +48,7 @@ class StatsScreen(Screen):
             
         return Label(
             text=text,
-            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM)
+            font_size=font_config.font_size_medium
         )
 
     def on_enter(self, *args):
@@ -71,20 +71,20 @@ class StatsScreen(Screen):
         
         prev_button = Button(
             text="Vorherige",
-            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM),
+            font_size=font_config.font_size_medium,
             disabled=self.current_page == 0,
             on_release=self.previous_page
         )
         
         page_label = Label(
             text=f"{self.current_page + 1}/{self.total_pages}",
-            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM),
+            font_size=font_config.font_size_medium,
             size_hint_x=0.5
         )
         
         next_button = Button(
             text="Nächste",
-            font_size=get_font_size(FONT_SIZE_RATIO_MEDIUM),
+            font_size=font_config.font_size_medium,
             disabled=self.current_page == self.total_pages - 1,
             on_release=self.next_page
         )

@@ -4,7 +4,7 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty
 from backend.game import Wind, Game
-from frontend.screens.config import get_font_size, FONT_SIZE_RATIO_BIG, FONT_SIZE_RATIO_MEDIUM, IDIOT_NAMES, font_config
+from frontend.screens.config import IDIOT_NAMES, font_config
 from random import sample
 
 class StartScreen(Screen):
@@ -20,7 +20,7 @@ class StartScreen(Screen):
         player_inputs_container = self.ids.player_inputs_container
         self.player_inputs = []  # Initialize the list to hold player inputs
         
-        font_size = get_font_size(FONT_SIZE_RATIO_BIG)
+        font_size = font_config.font_size_big
         
         for wind in list(Wind):
             player_layout = BoxLayout()

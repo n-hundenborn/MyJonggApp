@@ -1,6 +1,7 @@
 from kivy.app import App
 from backend.game import Game
 from kivy.uix.screenmanager import ScreenManager
+from frontend.screens.welcome_screen import WelcomeScreen
 from frontend.screens.start_screen import StartScreen
 from frontend.screens.scoreboard_screen import ScoreboardScreen
 from frontend.screens.add_points_screen import AddPointsScreen
@@ -30,17 +31,21 @@ class GameApp(App):
 
         # Add screens that need direct game instance
         screens = {
+            'welcome': WelcomeScreen(name='welcome', game=game_instance),
             'start': StartScreen(name='start', game=game_instance),
             'scoreboard': ScoreboardScreen(name='scoreboard', game=game_instance),
             'add_points': AddPointsScreen(name='add_points', game=game_instance),
             'round_summary': RoundSummaryScreen(name='round_summary', game=game_instance),
             'game_over': GameOverScreen(name='game_over'),
-            'save_game': SaveGameScreen(name='save_game'),
+            'save_game': SaveGameScreen(name='save_game', game=game_instance),
             'stats': StatsScreen(name='stats')
         }
         
         for screen in screens.values():
             self.sm.add_widget(screen)
+
+        # Set welcome screen as initial screen
+        self.sm.current = 'welcome'
 
         # Define update_game_data function
         def update_game_data():
