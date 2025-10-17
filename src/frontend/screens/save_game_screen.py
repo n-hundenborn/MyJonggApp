@@ -3,7 +3,7 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty, StringProperty
 from frontend.screens.config import font_config
-from backend.helper_functions import prepare_dataframes_for_saving, save_dataframes_to_excel
+from backend.data_export import prepare_dataframes_for_saving, save_dataframes_to_excel
 from datetime import datetime
 import pandas as pd
 from kivy.clock import Clock
@@ -66,9 +66,9 @@ class SaveGameScreen(Screen):
         self.ids.save_container.add_widget(self.status_label)
 
     def save_game(self):
-        # If already saved, just proceed to stats
+        # If already saved, just proceed to final screen
         if self.is_saved:
-            self.proceed_to_stats()
+            self.proceed_to_final()
             return
 
         if self.game_data is None:
@@ -93,20 +93,20 @@ class SaveGameScreen(Screen):
                 # Get folder path from the game instance
                 folder_path = self.game.game_folder if self.game else None
                 
-                filename_saved = save_dataframes_to_excel(df_rounds, df_standings, filename, folder_path)
+                filename_saved = save_dataframes_to_excel(df_rounds, df_standings, filename, folder_path, game=self.game)
                 self.save_status = f"Spiel erfolgreich gespeichert als {filename_saved}"
                 self.status_label.text = self.save_status
                 # Update button text and behavior
                 save_button = self.ids.save_button
-                save_button.text = 'Weiter zu Statistiken'
+                save_button.text = 'Weiter'
                 self.is_saved = True  # Mark as saved after successful save
             except Exception as e:
                 show_error(f"Fehler beim Speichern: {str(e)}")
 
         Clock.schedule_once(save_and_update_button, 0.1)
 
-    def proceed_to_stats(self):
-        self.manager.current = 'stats'
+    def proceed_to_final(self):
+        self.manager.current = 'final'
 
     def update_data(self, game_data: pd.DataFrame):
         self.game_data = game_data

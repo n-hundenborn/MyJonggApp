@@ -68,6 +68,7 @@ class StartScreen(Screen):
             player_names.append(name)
         
         self.game.set_players(player_names)
+        self.game.start_game()
         self.manager.current = 'scoreboard'
 
     def update_fonts(self):
