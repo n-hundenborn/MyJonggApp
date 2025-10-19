@@ -125,7 +125,9 @@
                 id: points_button
                 text: "Punkte eingeben"
                 font_size: font_config.font_size_medium
-                on_release: root.go_to_add_points(self)
+                on_release: 
+                    root.manager.transition.direction = 'left'
+                    root.go_to_add_points(self)
 
 <AddPointsScreen>:
     BoxLayout:
@@ -149,13 +151,13 @@
                 text: "Spieler"
                 font_size: font_config.font_size_medium
             Label:
+                text: "Gewinner"
+                font_size: font_config.font_size_medium
+            Label:
                 text: "Punkte"
                 font_size: font_config.font_size_medium
             Label:
                 text: "# Verdopplungen"
-                font_size: font_config.font_size_medium
-            Label:
-                text: "Gewinner"
                 font_size: font_config.font_size_medium
 
         # Body
@@ -170,6 +172,12 @@
             size_hint_y: 0.15
             orientation: 'horizontal'
             spacing: 10
+            Button:
+                text: "Zurück"
+                font_size: font_config.font_size_medium
+                on_release: 
+                    root.manager.transition.direction = 'right'
+                    root.manager.current = 'scoreboard'
             Button:
                 text: "Punkte berechnen"
                 font_size: font_config.font_size_medium
