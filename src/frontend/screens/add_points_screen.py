@@ -3,7 +3,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.checkbox import CheckBox
-from kivy.properties import ObjectProperty, NumericProperty
+from kivy.properties import ObjectProperty, NumericProperty, BooleanProperty
 from backend.game import Game, Wind
 from backend.helper_functions import setup_logger
 from frontend.screens.config import font_config, ACCENT_COLOR, HIGHLIGHT_COLOR
@@ -19,6 +19,7 @@ class AddPointsScreen(Screen):
     """A screen for adding points to players."""
     game: Game = ObjectProperty(None)
     current_round_number = NumericProperty(0)
+    first_time = BooleanProperty(True)
 
     def __init__(self, **kwargs):
         """Initialize the AddPointsScreen."""
@@ -27,6 +28,7 @@ class AddPointsScreen(Screen):
         self.winner_selection = None
         self.calculated_points_labels = {}
         self.rect = None
+        self.first_time = True
 
     def on_enter(self):
         self.current_round_number = self.game.current_round_number
@@ -78,8 +80,6 @@ class AddPointsScreen(Screen):
             # Use Wind instance as key
             self.player_inputs[player.wind] = (points_input, times_doubled_input)
             player_layout.add_widget(player_label)
-            player_layout.add_widget(points_input)
-            player_layout.add_widget(times_doubled_input)
             
             # Add winner checkbox with background for flashing
             checkbox_container = BoxLayout()
@@ -94,12 +94,19 @@ class AddPointsScreen(Screen):
             checkbox_container.add_widget(winner_checkbox)
             player_layout.add_widget(checkbox_container)
             
+            player_layout.add_widget(points_input)
+            player_layout.add_widget(times_doubled_input)
+            
             self.ids.players_layout.add_widget(player_layout)
         
         # Set focus to the first player's points input after all widgets are created
         if self.game.players:
             first_wind = self.game.players[0].wind
             self.player_inputs[first_wind][0].focus = True
+    
+    def on_leave(self):
+        """Called when leaving the screen"""
+        self.first_time = False
 
     def update_fonts(self):
         """Update all font sizes when window is resized"""

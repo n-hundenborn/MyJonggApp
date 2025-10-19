@@ -74,7 +74,7 @@ class StartScreen(Screen):
             player_names.append(name)
         
         self.game.set_players(player_names)
-        self.manager.current = 'scoreboard'
+        self.manager.current = 'add_points'
 
     def on_enter(self):
         """Set focus to the first input field when entering the screen."""

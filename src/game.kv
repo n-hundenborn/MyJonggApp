@@ -173,9 +173,11 @@
             orientation: 'horizontal'
             spacing: 10
             Button:
+                id: back_button
                 text: "Zurück"
                 font_size: font_config.font_size_medium
-                on_release: 
+                disabled: root.first_time
+                on_release:
                     root.manager.transition.direction = 'right'
                     root.manager.current = 'scoreboard'
             Button:
