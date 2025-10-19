@@ -187,7 +187,7 @@ class AddPointsScreen(Screen):
                 
                 # Check if the calculated value is too large
                 if calculated_value > 999999999:  # 1 billion - 1
-                    show_error("Die berechneten Punkte sind zu groß. Bitte reduzieren Sie die Punkte oder die Verdoppelungen.")
+                    show_error("Herzlichen Glückwunsch. Du hast die maximal möglichen Punkte erreicht und das Programm zum Absturz gebracht. Hoffentlich bist du stolz.")
                     return
                     
                 points[wind] = (points_value, times_doubled)
