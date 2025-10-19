@@ -3,6 +3,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.properties import StringProperty, ObjectProperty, NumericProperty
 from kivy.graphics import Color, Rectangle
+from kivy.core.window import Window
 from backend.game import Game
 from frontend.screens.config import ACCENT_COLOR, font_config
 from backend.helper_functions import calculate_ranks
@@ -17,11 +18,32 @@ class ScoreboardScreen(Screen):
         self.layout = BoxLayout(orientation='vertical')
         self.scoreboard = self.ids.scoreboard
         self.add_widget(self.layout)
+        self._keyboard = None
 
     def on_enter(self):
         self.current_round_number = self.game.current_round_number
         self.update_round_wind()
         self.update_scoreboard()
+        # Set up keyboard when entering screen
+        self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
+        if self._keyboard:
+            self._keyboard.bind(on_key_down=self._on_keyboard_down)
+
+    def on_pre_leave(self):
+        # Clean up keyboard when leaving screen
+        self._keyboard_closed()
+
+    def _keyboard_closed(self):
+        if self._keyboard:
+            self._keyboard.unbind(on_key_down=self._on_keyboard_down)
+            self._keyboard = None
+
+    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        if keycode[0] in (13, 271):  # 13 = main Enter, 271 = numpad Enter
+            if hasattr(self.ids, 'points_button'):
+                self.ids.points_button.trigger_action(duration=0.1)
+                return True
+        return False
 
     def update_round_wind(self):
         self.round_wind = self.game.get_round_wind_string()
@@ -70,5 +92,6 @@ class ScoreboardScreen(Screen):
             if isinstance(child, Label):
                 child.font_size = font_config.font_size_medium
     
+
     def go_to_add_points(self, instance):
         self.manager.current = 'add_points'

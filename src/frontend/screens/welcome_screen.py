@@ -48,10 +48,8 @@ class WelcomeScreen(Screen):
             
             if selected_folder and len(selected_folder) > 0:
                 folder_path = selected_folder[0]
-                print(f"Selected folder: {folder_path}")
                 self.set_game_folder(folder_path)
                 self.last_used_folder = folder_path
-                print(f"Can proceed: {self.can_proceed}")
             else:
                 # User cancelled, stay on welcome screen
                 print("User cancelled folder selection")

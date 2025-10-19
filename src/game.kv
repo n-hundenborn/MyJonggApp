@@ -122,6 +122,7 @@
         BoxLayout:
             size_hint_y: 0.15
             Button:
+                id: points_button
                 text: "Punkte eingeben"
                 font_size: font_config.font_size_medium
                 on_release: root.go_to_add_points(self)
@@ -211,6 +212,7 @@
         BoxLayout:
             size_hint_y: 0.15
             Button:
+                id: confirm_button
                 text: "Punkte anwenden"
                 font_size: font_config.font_size_medium
                 on_release: root.confirm_points()

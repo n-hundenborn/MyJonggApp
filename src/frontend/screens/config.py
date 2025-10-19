@@ -32,11 +32,42 @@ class FontConfig(EventDispatcher):
 # Global font config instance
 font_config = FontConfig()
 
-# Color palette (using RGBA format)
-PRIMARY_COLOR = (0.15, 0.2, 0.3, 1)    # Deep Navy Blue
-SECONDARY_COLOR = (0.2, 0.2, 0.25, 1)  # Dark Slate
-ACCENT_COLOR = (0.3, 0.4, 0.45, 1)     # Muted Teal
-HIGHLIGHT_COLOR = (0.25, 0.25, 0.3, 1)  # Soft Dark Gray
+
+# Modern Color Palette
+# Base Colors
+BACKGROUND_COLOR = "#F8F9FA"  # Soft Off-White
+SURFACE_COLOR = "#FFFFFF"     # Pure White
+PRIMARY_COLOR = "#6366F1"     # Modern Indigo
+SECONDARY_COLOR = "#8B5CF6"   # Vibrant Purple
+
+# Semantic Colors
+SUCCESS_COLOR = "#10B981"     # Emerald Green (for winner)
+WARNING_COLOR = "#F59E0B"     # Amber (for round wind)
+TEXT_PRIMARY = "#1F2937"      # Dark Gray (main text)
+TEXT_SECONDARY = "#6B7280"    # Medium Gray (secondary text)
+BORDER_COLOR = "#E5E7EB"      # Light Gray (subtle borders)
+
+# Convert hex to kivy color (RGBA float tuple)
+def hex_to_rgba(hex_color, alpha=1):
+    """Convert hex color to RGBA tuple"""
+    hex_color = hex_color.lstrip('#')
+    return (
+        int(hex_color[0:2], 16) / 255,
+        int(hex_color[2:4], 16) / 255,
+        int(hex_color[4:6], 16) / 255,
+        alpha
+    )
+
+# Kivy-ready color tuples
+K_BACKGROUND = hex_to_rgba(BACKGROUND_COLOR)
+K_SURFACE = hex_to_rgba(SURFACE_COLOR)
+K_PRIMARY = hex_to_rgba(PRIMARY_COLOR)
+K_SECONDARY = hex_to_rgba(SECONDARY_COLOR)
+K_SUCCESS = hex_to_rgba(SUCCESS_COLOR)
+K_WARNING = hex_to_rgba(WARNING_COLOR)
+K_TEXT_PRIMARY = hex_to_rgba(TEXT_PRIMARY)
+K_TEXT_SECONDARY = hex_to_rgba(TEXT_SECONDARY)
+K_BORDER = hex_to_rgba(BORDER_COLOR)
 
 IDIOT_NAMES = [
     "Dumpfbacke",
@@ -54,6 +85,10 @@ IDIOT_NAMES = [
     "Schlappohr",
 ]
 
-def get_font_size(ratio):
-    """Calculate font size based on window height and given ratio (legacy function)"""
-    return dp(Window.height * ratio)
+# legacy stuff for backward compatibility
+ACCENT_COLOR = K_PRIMARY
+HIGHLIGHT_COLOR = K_WARNING
+
+# def get_font_size(ratio):
+#     """Calculate font size based on window height and given ratio (legacy function)"""
+#     return dp(Window.height * ratio)

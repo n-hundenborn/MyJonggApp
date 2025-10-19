@@ -122,4 +122,3 @@ class StatsScreen(Screen):
                     for nav_child in child.children:
                         if isinstance(nav_child, (Label, Button)):
                             nav_child.font_size = font_config.font_size_medium
-

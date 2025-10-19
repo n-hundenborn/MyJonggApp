@@ -5,6 +5,7 @@ from kivy.properties import ObjectProperty, NumericProperty
 from backend.game import Game
 from frontend.screens.config import ACCENT_COLOR, font_config
 from kivy.graphics import Color, Rectangle
+from kivy.core.window import Window
 
 class RoundSummaryScreen(Screen):
     """A screen for showing the round summary before confirming points."""
@@ -15,11 +16,16 @@ class RoundSummaryScreen(Screen):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.rect = None  # Add this line to store the rectangle reference
+        self._keyboard = None
 
     def on_enter(self):
         """Update the display when entering the screen."""
         self.ids.summary_layout.clear_widgets()
         self.current_round_number = self.game.current_round_number
+        # Set up keyboard when entering screen
+        self._keyboard = Window.request_keyboard(self._keyboard_closed, self)
+        if self._keyboard:
+            self._keyboard.bind(on_key_down=self._on_keyboard_down)
         
         # Get the last round
         current_round = self.game.rounds[-1]
@@ -37,24 +43,22 @@ class RoundSummaryScreen(Screen):
                     self.rect = Rectangle(pos=player_layout.pos, size=player_layout.size)
                 player_layout.bind(pos=self._update_rect, size=self._update_rect)
 
-            font_size = font_config.font_size_medium
-
             # Player name
             player_layout.add_widget(Label(
                 text=f"{player.show()}",
-                font_size=font_size
+                font_size=font_config.font_size_medium
             ))
 
             # Round points (calculated points)
             player_layout.add_widget(Label(
                 text=str(score.calculated_points),
-                font_size=font_size
+                font_size=font_config.font_size_medium
             ))
 
             # Point change
             player_layout.add_widget(Label(
                 text=str(score.net_points),
-                font_size=font_size
+                font_size=font_config.font_size_medium
             ))
 
             self.ids.summary_layout.add_widget(player_layout)
@@ -82,6 +86,24 @@ class RoundSummaryScreen(Screen):
         """Update the rectangle position and size when the layout changes."""
         self.rect.pos = instance.pos
         self.rect.size = instance.size 
+
+    def on_pre_leave(self):
+        """Clean up keyboard when leaving screen"""
+        self._keyboard_closed()
+
+    def _keyboard_closed(self):
+        """Handle keyboard cleanup"""
+        if self._keyboard:
+            self._keyboard.unbind(on_key_down=self._on_keyboard_down)
+            self._keyboard = None
+
+    def _on_keyboard_down(self, keyboard, keycode, text, modifiers):
+        """Handle keyboard input"""
+        if keycode[0] in (13, 271):  # 13 = main Enter, 271 = numpad Enter
+            if hasattr(self.ids, 'confirm_button'):
+                self.ids.confirm_button.trigger_action(duration=0.1)
+                return True
+        return False
 
     def update_round_wind(self):
         """Update the display when the round wind changes."""

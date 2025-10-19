@@ -6,10 +6,11 @@ from kivy.uix.checkbox import CheckBox
 from kivy.properties import ObjectProperty, NumericProperty
 from backend.game import Game, Wind
 from backend.helper_functions import setup_logger
-from frontend.screens.config import ACCENT_COLOR, HIGHLIGHT_COLOR, font_config
+from frontend.screens.config import font_config, ACCENT_COLOR, HIGHLIGHT_COLOR
 from kivy.graphics import Color, Rectangle
 from kivy.animation import Animation
 from frontend.components.popups import show_error
+from frontend.screens.styles import apply_button_style, apply_input_style
 
 # Configure logger
 logger = setup_logger(__name__)
@@ -195,3 +196,10 @@ class AddPointsScreen(Screen):
         if hasattr(self, 'ids') and hasattr(self.ids, 'players_layout'):
             self.ids.players_layout.clear_widgets()
             self.on_enter()
+
+        # Apply styles to buttons and inputs
+        for button in self.ids.buttons_layout.children:
+            apply_button_style(button)
+        for input_field in self.player_inputs.values():
+            apply_input_style(input_field[0])
+            apply_input_style(input_field[1])

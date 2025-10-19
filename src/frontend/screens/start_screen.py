@@ -25,15 +25,21 @@ class StartScreen(Screen):
         for wind in list(Wind):
             player_layout = BoxLayout()
             player_layout.add_widget(Label(
-                text=str(wind), 
-                font_size=font_size
+                text=str(wind),
+                font_size=font_size,
+                height=font_size * 2.5,  # Match TextInput height
+                size_hint_y=None,  # Disable vertical size hint
+                valign='middle',  # Vertical center alignment
+                text_size=(None, font_size * 2.5)  # Enable text vertical alignment
             ))
             player_input = TextInput(
                 multiline=False,
                 write_tab=False,
                 font_size=font_size,
                 halign='left',
-                padding=[10, (self.height - font_size) / 2]  # horizontal padding, vertical padding
+                padding_y=(font_size/2, font_size/2),
+                height=font_size * 2.5,
+                size_hint_y=None,
             )
             player_input.bind(on_text_validate=self.on_text_validate)
             self.player_inputs.append(player_input)
