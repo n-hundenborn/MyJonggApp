@@ -76,6 +76,11 @@ class StartScreen(Screen):
         self.game.set_players(player_names)
         self.manager.current = 'scoreboard'
 
+    def on_enter(self):
+        """Set focus to the first input field when entering the screen."""
+        if self.player_inputs:
+            self.player_inputs[0].focus = True
+
     def update_fonts(self):
         """Update all font sizes when window is resized"""
         # Update TextInputs and Labels

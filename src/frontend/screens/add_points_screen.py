@@ -95,6 +95,11 @@ class AddPointsScreen(Screen):
             player_layout.add_widget(checkbox_container)
             
             self.ids.players_layout.add_widget(player_layout)
+        
+        # Set focus to the first player's points input after all widgets are created
+        if self.game.players:
+            first_wind = self.game.players[0].wind
+            self.player_inputs[first_wind][0].focus = True
 
     def update_fonts(self):
         """Update all font sizes when window is resized"""
