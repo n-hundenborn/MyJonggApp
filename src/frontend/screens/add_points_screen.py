@@ -127,15 +127,25 @@ class AddPointsScreen(Screen):
             instance.text = '0'
 
     def on_text_validate(self, instance):
-        current_key = next((wind for wind, (input, _) in self.player_inputs.items() if input == instance), None)
-        if current_key:
-            keys = list(self.player_inputs.keys())
-            current_index = keys.index(current_key)
-            if current_index < len(keys) - 1:
-                next_key = keys[current_index + 1]
-                self.player_inputs[next_key][0].focus = True
-            else:
-                self.submit_points()
+        # Find which player and which input field (points or times_doubled) triggered this
+        for wind, (points_input, times_doubled_input) in self.player_inputs.items():
+            if instance == points_input:
+                # If we're in the points input, move to times_doubled input of the same player
+                times_doubled_input.focus = True
+                return
+            elif instance == times_doubled_input:
+                # If we're in times_doubled input, find the next player's points input
+                keys = list(self.player_inputs.keys())
+                current_index = keys.index(wind)
+                if current_index < len(keys) - 1:
+                    # Move to next player's points input
+                    next_key = keys[current_index + 1]
+                    self.player_inputs[next_key][0].focus = True
+                    return
+                else:
+                    # We're in the last player's times_doubled input, submit the points
+                    self.submit_points()
+                    return
 
     def on_winner_selected(self, player_wind: Wind, value: bool) -> None:
         if value:
