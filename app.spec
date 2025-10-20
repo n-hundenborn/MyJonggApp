@@ -27,6 +27,8 @@ a = Analysis(
         'kivymd',
         'pandas',
         'openpyxl',
+        'tkinter',
+        'tkinter.filedialog',
     ],
     hookspath=[],
     hooksconfig={},
