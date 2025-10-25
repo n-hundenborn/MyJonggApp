@@ -3,51 +3,69 @@ from kivy.uix.button import Button
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.core.window import Window
-from frontend.screens.config import font_config
+from kivy.graphics import Color, RoundedRectangle
+from kivy.metrics import dp
+from frontend.screens.config import font_config, K_SURFACE, K_TEXT_PRIMARY, K_PRIMARY, K_BACKGROUND
+from frontend.screens.styles import apply_button_style, BUTTON_STYLES, CARD_STYLES
 
 class ErrorPopup(Popup):
     def __init__(self, error_message, **kwargs):
+        # Set modern styling before init
+        kwargs.update({
+            'background': '',  # Remove default background
+            'background_color': [0, 0, 0, 0],  # Transparent
+            'title': 'Fehler',
+            'title_size': font_config.font_size_big,
+            'title_align': 'center',
+            'title_color': K_TEXT_PRIMARY,
+            'separator_height': 0,  # Remove separator
+            'size_hint': (0.8, None),  # 80% width, fixed height
+            'height': dp(250),  # Fixed height
+            'size_hint_min_x': dp(400),  # Minimum width
+        })
         super().__init__(**kwargs)
-        self.title = 'Fehler'
-        self.title_size = font_config.font_size_big
-        self.title_align = 'center'
-        
-        # Make popup size responsive to window size
-        self.size_hint = (0.8, 0.4)  # 80% width, 40% height of window
-        self.size_hint_min = (400, 200)  # Minimum size
         
         # Store references for font updates
         self.message_label = None
         self.close_button = None
         
-        # Bind to window resize to update title font too
-        Window.bind(size=self._on_window_resize)
-        
-        # Create content layout with responsive padding
+        # Create content layout with card styling
         content = BoxLayout(
-            orientation='vertical', 
-            padding=[Window.width * 0.02, Window.height * 0.02]  # 2% of window dimensions
+            orientation='vertical',
+            padding=CARD_STYLES['default']['padding'],
+            spacing=dp(20)
         )
         
-        # Message label with responsive font size
+        # Apply card styling to popup
+        with self.canvas.before:
+            Color(*K_SURFACE)
+            self.background_rect = RoundedRectangle(
+                pos=self.pos,
+                size=self.size,
+                radius=CARD_STYLES['default']['border_radius']
+            )
+        self.bind(pos=self._update_background, size=self._update_background)
+        
+        # Message label with modern styling
         self.message_label = Label(
             text=error_message,
-            text_size=(None, None),  # Will be set after layout
+            text_size=(None, None),
             size_hint_y=0.7,
             halign='center',
             valign='middle',
-            font_size=font_config.font_size_medium
+            font_size=font_config.font_size_medium,
+            color=K_TEXT_PRIMARY
         )
         
-        # Close button with responsive font size
+        # Close button with modern styling
         self.close_button = Button(
             text='Verstanden',
-            size_hint_y=0.3,
-            size_hint_x=0.4,
+            size_hint=(None, None),
+            size=(dp(200), dp(50)),
             pos_hint={'center_x': 0.5},
-            on_release=self.dismiss,
-            font_size=font_config.font_size_medium
+            on_release=self.dismiss
         )
+        apply_button_style(self.close_button)
         
         # Add widgets to layout
         content.add_widget(self.message_label)
@@ -62,6 +80,12 @@ class ErrorPopup(Popup):
         # Update text_size after content is ready
         self.bind(size=self._update_text_size)
     
+    def _update_background(self, instance, value):
+        """Update the background rectangle when popup size/position changes"""
+        if hasattr(self, 'background_rect'):
+            self.background_rect.pos = self.pos
+            self.background_rect.size = self.size
+
     def _on_window_resize(self, *args):
         """Update popup elements when window is resized"""
         # Update title font size
@@ -69,12 +93,8 @@ class ErrorPopup(Popup):
         
         if self.message_label:
             self.message_label.font_size = font_config.font_size_medium
-        if self.close_button:
-            self.close_button.font_size = font_config.font_size_medium
-        
-        # Update padding based on new window size
-        if self.content:
-            self.content.padding = [Window.width * 0.02, Window.height * 0.02]
+            # Update text wrapping
+            self.message_label.text_size = (self.width * 0.9, None)
     
     def _update_text_size(self, *args):
         """Update text wrapping size when popup size changes"""
