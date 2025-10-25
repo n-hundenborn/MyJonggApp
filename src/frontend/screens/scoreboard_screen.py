@@ -62,8 +62,11 @@ class ScoreboardScreen(Screen):
         # Get ranks using helper function
         rank_map = calculate_ranks(self.game.players)
 
-        # Display players in original order with their ranks
-        for player in self.game.players:
+        # Sort players by rank (ascending order of rank_map values means descending ranks)
+        sorted_players = sorted(self.game.players, key=lambda p: rank_map[p])
+        
+        # Display players in rank order
+        for player in sorted_players:
             # Create and add labels directly
             rank_label = Label(text=str(rank_map[player]), font_size=font_size)
             name_label = Label(text=player.show(), font_size=font_size)

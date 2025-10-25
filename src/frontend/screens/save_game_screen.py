@@ -25,7 +25,7 @@ class SaveGameScreen(Screen):
         
         # Add title
         title = Label(
-            text="Spiel speichern",
+            text="Speichern",
             font_size=font_config.font_size_big,
             size_hint_y=0.2
         )
@@ -33,7 +33,7 @@ class SaveGameScreen(Screen):
 
         # Add helper label for filename input
         filename_helper = Label(
-            text="Bitte geben Sie einen Dateinamen für die Spielaufzeichnung ein:",
+            text="Bitte geben Sie einen Dateinamen für die Rundenaufzeichnung ein:",
             font_size=font_config.font_size_medium,
             size_hint_y=0.1
         )
@@ -72,19 +72,19 @@ class SaveGameScreen(Screen):
             return
 
         if self.game_data is None:
-            show_error("Keine Spieldaten vorhanden")
+            show_error("Keine Rundendaten vorhanden")
             return
 
         # Use default filename if input is empty
         timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-        default_filename = f"mahjongg_game_{timestamp}"
+        default_filename = f"mahjongg_round_{timestamp}"
         filename = f"{self.filename_input.text or default_filename}"
         
         # Disable input field and update with final filename
         self.filename_input.text = filename
         self.filename_input.disabled = True
         
-        self.save_status = "Speichere Spielstatistiken..."
+        self.save_status = "Speichere Statistiken..."
         self.status_label.text = self.save_status
         
         def save_and_update_button(dt):
@@ -94,7 +94,7 @@ class SaveGameScreen(Screen):
                 folder_path = self.game.game_folder if self.game else None
                 
                 filename_saved = save_dataframes_to_excel(df_rounds, df_standings, filename, folder_path, game=self.game)
-                self.save_status = f"Spiel erfolgreich gespeichert als {filename_saved}"
+                self.save_status = f"Runde erfolgreich gespeichert unter {filename_saved}."
                 self.status_label.text = self.save_status
                 # Update button text and behavior
                 save_button = self.ids.save_button
@@ -124,7 +124,7 @@ class SaveGameScreen(Screen):
             for child in self.ids.save_container.children:
                 if isinstance(child, Label):
                     # Title gets big font, others get medium font
-                    if child.text == "Spiel speichern":
+                    if child.text == "Speichern":
                         child.font_size = font_config.font_size_big
                     else:
                         child.font_size = font_config.font_size_medium

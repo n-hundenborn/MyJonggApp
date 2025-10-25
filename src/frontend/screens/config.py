@@ -24,10 +24,18 @@ class FontConfig(EventDispatcher):
         self._update_font_sizes()
     
     def _update_font_sizes(self, *args):
-        """Update all font sizes based on current window height"""
-        self.font_size_small = dp(Window.height * FONT_SIZE_RATIO_SMALL)
-        self.font_size_medium = dp(Window.height * FONT_SIZE_RATIO_MEDIUM)
-        self.font_size_big = dp(Window.height * FONT_SIZE_RATIO_BIG)
+        """Update all font sizes based on current window height with minimum sizes"""
+        # Calculate base sizes
+        height = Window.height
+        # Add minimum sizes to prevent text from becoming too small
+        min_small = 14
+        min_medium = 16
+        min_big = 20
+        
+        # Calculate sizes with minimums
+        self.font_size_small = max(min_small, int(height * FONT_SIZE_RATIO_SMALL))
+        self.font_size_medium = max(min_medium, int(height * FONT_SIZE_RATIO_MEDIUM))
+        self.font_size_big = max(min_big, int(height * FONT_SIZE_RATIO_BIG))
 
 # Global font config instance
 font_config = FontConfig()
@@ -38,7 +46,7 @@ font_config = FontConfig()
 BACKGROUND_COLOR = "#F8F9FA"  # Soft Off-White
 SURFACE_COLOR = "#FFFFFF"     # Pure White
 PRIMARY_COLOR = "#6366F1"     # Modern Indigo
-SECONDARY_COLOR = "#8B5CF6"   # Vibrant Purple
+SECONDARY_COLOR = "#64748B"   # Slate Gray
 
 # Semantic Colors
 SUCCESS_COLOR = "#10B981"     # Emerald Green (for winner)

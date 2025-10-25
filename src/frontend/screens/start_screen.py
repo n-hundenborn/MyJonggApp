@@ -75,7 +75,7 @@ class StartScreen(Screen):
         
         self.game.set_players(player_names)
         self.game.start_game()
-        self.manager.current = 'scoreboard'
+        self.manager.current = 'add_points'
 
     def update_fonts(self):
         """Update all font sizes when window is resized"""

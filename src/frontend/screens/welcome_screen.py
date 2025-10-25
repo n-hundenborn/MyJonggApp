@@ -1,5 +1,4 @@
 from kivy.uix.screenmanager import Screen
-from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, StringProperty
 from backend.game import Game
 from datetime import datetime
@@ -26,7 +25,18 @@ class WelcomeScreen(Screen):
     def update_folder_info(self):
         """Update the folder info display."""
         if self.game and self.game.game_folder:
-            self.folder_info = f"Spielordner: {self.game.game_folder}"
+            # Shorten the path if it's too long
+            path = self.game.game_folder
+            if len(path) > 50:  # Adjust this number based on your needs
+                # Keep the first part and last part, with ... in between
+                parts = path.split(os.sep)
+                if len(parts) > 4:
+                    shortened = os.sep.join([parts[0], '...'] + parts[-2:])
+                else:
+                    shortened = path
+            else:
+                shortened = path
+            self.folder_info = f"Rundenordner:\n{shortened}"
             self.can_proceed = True
         else:
             self.folder_info = "Kein Ordner ausgewählt"

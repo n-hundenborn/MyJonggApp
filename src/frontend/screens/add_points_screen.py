@@ -47,7 +47,7 @@ class AddPointsScreen(Screen):
                 player_layout.bind(pos=self._update_rect, size=self._update_rect)
 
             player_label = Label(
-                text=f"{player.show()}:",
+                text=player.show(),
                 font_size=font_config.font_size_medium
             )
             
@@ -219,9 +219,7 @@ class AddPointsScreen(Screen):
             self.ids.players_layout.clear_widgets()
             self.on_enter()
 
-        # Apply styles to buttons and inputs
-        for button in self.ids.buttons_layout.children:
-            apply_button_style(button)
+        # Apply styles to inputs only - buttons are styled by KV file
         for input_field in self.player_inputs.values():
             apply_input_style(input_field[0])
             apply_input_style(input_field[1])

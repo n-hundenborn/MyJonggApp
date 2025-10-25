@@ -25,7 +25,7 @@ class FinalScreen(Screen):
         
         if self.game_data is None or len(self.game_data) == 0:
             self.ids.final_container.add_widget(Label(
-                text="Keine Spielstatistiken verfügbar",
+                text="Keine Statistiken verfügbar",
                 font_size=font_config.font_size_medium
             ))
             return
