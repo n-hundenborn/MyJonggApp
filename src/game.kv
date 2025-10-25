@@ -195,7 +195,7 @@
         BoxLayout:
             size_hint_y: 0.15
             Label:
-                text: f"Rundenübersicht Runde {root.current_round_number}"
+                text: f"Punkteberechnung"
                 font_size: font_config.font_size_big
 
         # Table Header
@@ -280,7 +280,7 @@
                 font_size: font_config.font_size_medium
                 on_release: root.save_game()
 
-<StatsScreen>:
+<FinalScreen>:
     BoxLayout:
         orientation: 'vertical'
         padding: [20, 20, 20, 20]
@@ -288,6 +288,22 @@
         
         # Body
         BoxLayout:
-            id: stats_container
+            id: final_container
             orientation: 'vertical'
-            size_hint_y: 1.0
+            size_hint_y: 0.75
+        
+        # Footer with action buttons
+        BoxLayout:
+            size_hint_y: 0.25
+            orientation: 'horizontal'
+            spacing: 20
+            
+            Button:
+                text: "Öffne Spielordner"
+                font_size: font_config.font_size_medium
+                on_release: root.open_game_folder()
+            
+            Button:
+                text: "Neues Spiel"
+                font_size: font_config.font_size_medium
+                on_release: root.start_new_game()

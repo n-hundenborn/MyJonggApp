@@ -6,7 +6,7 @@ from frontend.screens.start_screen import StartScreen
 from frontend.screens.scoreboard_screen import ScoreboardScreen
 from frontend.screens.add_points_screen import AddPointsScreen
 from frontend.screens.game_over_screen import GameOverScreen
-from frontend.screens.stats_screen import StatsScreen
+from frontend.screens.final_screen import FinalScreen
 from frontend.screens.save_game_screen import SaveGameScreen
 from frontend.screens.round_summary_screen import RoundSummaryScreen
 from kivy.core.window import Window
@@ -38,7 +38,7 @@ class GameApp(App):
             'round_summary': RoundSummaryScreen(name='round_summary', game=game_instance),
             'game_over': GameOverScreen(name='game_over'),
             'save_game': SaveGameScreen(name='save_game', game=game_instance),
-            'stats': StatsScreen(name='stats')
+            'final': FinalScreen(name='final', game=game_instance)
         }
         
         for screen in screens.values():
@@ -50,7 +50,7 @@ class GameApp(App):
         # Define update_game_data function
         def update_game_data():
             game_data = game_instance.create_game_dataframe()
-            for screen_name in ['game_over', 'save_game', 'stats']:
+            for screen_name in ['game_over', 'save_game', 'final']:
                 if screen_name in screens:
                     screen = screens[screen_name]
                     if hasattr(screen, 'update_data'):
@@ -69,7 +69,7 @@ class GameApp(App):
         # Bind the update methods
         self.sm.bind(
             current=lambda instance, value: 
-                update_game_data() if value in ['game_over', 'save_game', 'stats'] else None
+                update_game_data() if value in ['game_over', 'save_game', 'final'] else None
         )
         self.sm.bind(current=pre_transition)
 
