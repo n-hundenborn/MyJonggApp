@@ -8,6 +8,12 @@ from kivy.core.window import Window
 from kivy.event import EventDispatcher
 from kivy.properties import NumericProperty
 
+# Layout Constants
+SCREEN_PADDING = dp(20)
+SECTION_SPACING = dp(20)
+WIDGET_SPACING = dp(10)
+CONTENT_WIDTH = dp(800)  # Max width for content
+
 # Font sizes as ratios of window height
 FONT_SIZE_RATIO_SMALL = 0.025  # 2.5% of window height
 FONT_SIZE_RATIO_MEDIUM = 0.035  # 3.5% of window height
