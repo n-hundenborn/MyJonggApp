@@ -1,12 +1,16 @@
+"""
+Popup components for the application.
+"""
 from kivy.uix.popup import Popup
-from kivy.uix.button import Button
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.graphics import Color, RoundedRectangle
 from kivy.metrics import dp
-from frontend.screens.styles import font_config, K_SURFACE, K_TEXT_PRIMARY, K_PRIMARY, K_BACKGROUND
-from frontend.screens.styles import apply_button_style, BUTTON_STYLES, CARD_STYLES
+from frontend.shared.styles import (
+    font_config, K_SURFACE, K_TEXT_PRIMARY, CARD_STYLES
+)
+from .buttons import StyledButton
+from .cards import Card
 
 class ErrorPopup(Popup):
     def __init__(self, error_message, **kwargs):
@@ -30,11 +34,7 @@ class ErrorPopup(Popup):
         self.close_button = None
         
         # Create content layout with card styling
-        content = BoxLayout(
-            orientation='vertical',
-            padding=CARD_STYLES['default']['padding'],
-            spacing=dp(20)
-        )
+        content = Card()
         
         # Apply card styling to popup
         with self.canvas.before:
@@ -58,14 +58,10 @@ class ErrorPopup(Popup):
         )
         
         # Close button with modern styling
-        self.close_button = Button(
+        self.close_button = StyledButton(
             text='Verstanden',
-            size_hint=(None, None),
-            size=(dp(200), dp(50)),
-            pos_hint={'center_x': 0.5},
             on_release=self.dismiss
         )
-        apply_button_style(self.close_button)
         
         # Add widgets to layout
         content.add_widget(self.message_label)
@@ -110,4 +106,4 @@ class ErrorPopup(Popup):
 def show_error(message: str):
     """Utility function to show error popup"""
     popup = ErrorPopup(message)
-    popup.open() 
+    popup.open()

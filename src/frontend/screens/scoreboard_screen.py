@@ -5,7 +5,7 @@ from kivy.properties import StringProperty, ObjectProperty, NumericProperty
 from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
 from backend.game import Game
-from frontend.screens.styles import K_PRIMARY, font_config
+from frontend.shared.styles import K_PRIMARY, font_config
 from backend.helper_functions import calculate_ranks
 
 class ScoreboardScreen(Screen):

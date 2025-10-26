@@ -3,7 +3,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty, NumericProperty
 from backend.game import Game
-from frontend.screens.styles import K_PRIMARY, font_config
+from frontend.shared.styles import K_PRIMARY, font_config
 from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
 

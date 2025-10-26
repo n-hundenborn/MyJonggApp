@@ -6,11 +6,13 @@ from kivy.uix.checkbox import CheckBox
 from kivy.properties import ObjectProperty, NumericProperty, BooleanProperty
 from backend.game import Game, Wind
 from backend.helper_functions import setup_logger
-from frontend.screens.styles import font_config, K_PRIMARY, K_WARNING
+from frontend.shared.styles import (
+    font_config, K_PRIMARY, K_WARNING,
+    apply_button_style, apply_input_style
+)
 from kivy.graphics import Color, Rectangle
 from kivy.animation import Animation
 from frontend.components.popups import show_error
-from frontend.screens.styles import apply_button_style, apply_input_style
 
 # Configure logger
 logger = setup_logger(__name__)

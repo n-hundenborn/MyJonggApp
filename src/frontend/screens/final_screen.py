@@ -4,7 +4,7 @@ from kivy.uix.button import Button
 import pandas as pd
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty
-from frontend.screens.styles import font_config
+from frontend.shared.styles import font_config
 import subprocess
 import os
 

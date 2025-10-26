@@ -4,8 +4,8 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty
 from backend.game import Wind, Game
-from frontend.screens.config import IDIOT_NAMES
-from frontend.screens.styles import font_config
+from frontend.shared.config import IDIOT_NAMES
+from frontend.shared.styles import font_config
 from random import sample
 
 class StartScreen(Screen):
