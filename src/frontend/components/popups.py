@@ -5,7 +5,7 @@ from kivy.uix.label import Label
 from kivy.core.window import Window
 from kivy.graphics import Color, RoundedRectangle
 from kivy.metrics import dp
-from frontend.screens.config import font_config, K_SURFACE, K_TEXT_PRIMARY, K_PRIMARY, K_BACKGROUND
+from frontend.screens.styles import font_config, K_SURFACE, K_TEXT_PRIMARY, K_PRIMARY, K_BACKGROUND
 from frontend.screens.styles import apply_button_style, BUTTON_STYLES, CARD_STYLES
 
 class ErrorPopup(Popup):

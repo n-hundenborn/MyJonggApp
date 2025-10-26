@@ -3,7 +3,7 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty, NumericProperty
 from backend.game import Game
-from frontend.screens.config import ACCENT_COLOR, font_config
+from frontend.screens.styles import K_PRIMARY, font_config
 from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
 
@@ -39,7 +39,7 @@ class RoundSummaryScreen(Screen):
             # Highlight round wind instead of winner
             if player.wind == current_round.round_wind:
                 with player_layout.canvas.before:
-                    Color(*ACCENT_COLOR)
+                    Color(*K_PRIMARY)
                     self.rect = Rectangle(pos=player_layout.pos, size=player_layout.size)
                 player_layout.bind(pos=self._update_rect, size=self._update_rect)
 

@@ -6,7 +6,7 @@ from kivy.uix.checkbox import CheckBox
 from kivy.properties import ObjectProperty, NumericProperty, BooleanProperty
 from backend.game import Game, Wind
 from backend.helper_functions import setup_logger
-from frontend.screens.config import font_config, ACCENT_COLOR, HIGHLIGHT_COLOR
+from frontend.screens.styles import font_config, K_PRIMARY, K_WARNING
 from kivy.graphics import Color, Rectangle
 from kivy.animation import Animation
 from frontend.components.popups import show_error
@@ -42,7 +42,7 @@ class AddPointsScreen(Screen):
             # Add background color for round wind player
             if player.wind == self.game.round_wind:
                 with player_layout.canvas.before:
-                    Color(*ACCENT_COLOR)
+                    Color(*K_PRIMARY)
                     self.rect = Rectangle(pos=player_layout.pos, size=player_layout.size)
                 player_layout.bind(pos=self._update_rect, size=self._update_rect)
 
@@ -170,11 +170,11 @@ class AddPointsScreen(Screen):
                 if isinstance(child, BoxLayout):
                     checkbox_container = next((w for w in child.children if isinstance(w, BoxLayout)), None)
                     if checkbox_container and hasattr(checkbox_container, 'rect'):
-                        # Flash animation with HIGHLIGHT_COLOR
+                        # Flash animation with K_WARNING
                         anim = (
-                            Animation(rgba=(*HIGHLIGHT_COLOR[:3], 0.8), duration=0.2) +
+                            Animation(rgba=(*K_WARNING[:3], 0.8), duration=0.2) +
                             Animation(rgba=(0, 0, 0, 0), duration=0.2) +
-                            Animation(rgba=(*HIGHLIGHT_COLOR[:3], 0.8), duration=0.2) +
+                            Animation(rgba=(*K_WARNING[:3], 0.8), duration=0.2) +
                             Animation(rgba=(0, 0, 0, 0), duration=0.2)
                         )
                         anim.start(checkbox_container.canvas.before.children[0])

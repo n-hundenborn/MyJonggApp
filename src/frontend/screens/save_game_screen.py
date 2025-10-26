@@ -2,7 +2,7 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty, StringProperty
-from frontend.screens.config import font_config
+from frontend.screens.styles import font_config
 from backend.data_export import prepare_dataframes_for_saving, save_dataframes_to_excel
 from datetime import datetime
 import pandas as pd

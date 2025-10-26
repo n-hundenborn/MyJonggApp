@@ -5,7 +5,7 @@ from kivy.properties import StringProperty, ObjectProperty, NumericProperty
 from kivy.graphics import Color, Rectangle
 from kivy.core.window import Window
 from backend.game import Game
-from frontend.screens.config import ACCENT_COLOR, font_config
+from frontend.screens.styles import K_PRIMARY, font_config
 from backend.helper_functions import calculate_ranks
 
 class ScoreboardScreen(Screen):
@@ -76,7 +76,7 @@ class ScoreboardScreen(Screen):
             if player.wind == self.game.round_wind:
                 for label in [rank_label, name_label, points_label]:
                     with label.canvas.before:
-                        Color(*ACCENT_COLOR)
+                        Color(*K_PRIMARY)
                         Rectangle(pos=label.pos, size=label.size)
                     label.bind(pos=self._update_rect, size=self._update_rect)
 
