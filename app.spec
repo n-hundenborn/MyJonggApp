@@ -1,6 +1,12 @@
 from kivy_deps import sdl2, glew
+from PyInstaller.utils.hooks import collect_all
 import os
 import glob
+
+# Collect all numpy and pandas components
+datas_numpy, binaries_numpy, hiddenimports_numpy = collect_all('numpy')
+datas_pandas, binaries_pandas, hiddenimports_pandas = collect_all('pandas')
+
 # Define paths using absolute paths
 spec_root = os.path.abspath('.')  # Current directory
 src_root = os.path.join(spec_root, 'src')
@@ -17,19 +23,18 @@ for root, dirs, files in os.walk(src_root):
 a = Analysis(
     [os.path.join(src_root, 'main.py')],  # Your main script
     pathex=[src_root],
-    binaries=[],
+    binaries=binaries_numpy + binaries_pandas,
     datas=[
         (os.path.join(assets_root, 'icon.ico'), 'assets'),  # Include icon
         *kv_files,  # Include all found .kv files
-    ],
+    ] + datas_numpy + datas_pandas,
     hiddenimports=[
         'kivy',
         'kivymd',
-        'pandas',
         'openpyxl',
         'tkinter',
         'tkinter.filedialog',
-    ],
+    ] + hiddenimports_numpy + hiddenimports_pandas,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

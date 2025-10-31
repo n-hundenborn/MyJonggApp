@@ -7,7 +7,7 @@ if exist build rmdir /s /q build
 if exist dist rmdir /s /q dist
 
 REM Build the executable
-pyinstaller app.spec
+pyinstaller --log-level=INFO app.spec
 
 if %errorlevel% equ 0 (
     echo.

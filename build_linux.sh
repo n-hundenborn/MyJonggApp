@@ -7,7 +7,7 @@ echo ""
 rm -rf build dist
 
 # Build the executable
-pyinstaller app_linux.spec
+pyinstaller --log-level=INFO app_linux.spec
 
 if [ $? -eq 0 ]; then
     echo ""
