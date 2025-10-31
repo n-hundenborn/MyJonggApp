@@ -1,0 +1,124 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install uv
+        run: pip install uv
+      
+      - name: Install dependencies
+        run: |
+          uv pip install --system -r requirements.lock
+          uv pip install --system pyinstaller
+          uv pip install --system kivy_deps.sdl2 kivy_deps.glew
+      
+      - name: Build executable
+        run: pyinstaller app.spec
+      
+      - name: Create zip archive
+        run: |
+          cd dist
+          Compress-Archive -Path "MyJongg Calculator.exe" -DestinationPath "MyJongg-Calculator-Windows.zip"
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-build
+          path: dist/MyJongg-Calculator-Windows.zip
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3-dev \
+            libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
+            libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
+            libmtdev-dev xclip xsel
+      
+      - name: Install uv
+        run: pip install uv
+      
+      - name: Install dependencies
+        run: |
+          uv pip install --system -r requirements.lock
+          uv pip install --system pyinstaller
+      
+      - name: Build executable
+        run: pyinstaller app_linux.spec
+      
+      - name: Make executable and create tarball
+        run: |
+          chmod +x dist/MyJongg-Calculator
+          cd dist
+          tar -czf MyJongg-Calculator-Linux.tar.gz MyJongg-Calculator
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux-build
+          path: dist/MyJongg-Calculator-Linux.tar.gz
+
+  create-release:
+    needs: [build-windows, build-linux]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: windows-build
+      
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: linux-build
+      
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            MyJongg-Calculator-Windows.zip
+            MyJongg-Calculator-Linux.tar.gz
+          body: |
+            ## MyJongg Calculator ${{ github.ref_name }}
+            
+            ### Downloads
+            
+            **Windows:**
+            - Download `MyJongg-Calculator-Windows.zip`
+            - Extract and run `MyJongg Calculator.exe`
+            
+            **Linux:**
+            - Download `MyJongg-Calculator-Linux.tar.gz`
+            - Extract: `tar -xzf MyJongg-Calculator-Linux.tar.gz`
+            - Run: `./MyJongg-Calculator`
+            - **Note:** Requires SDL2 libraries:
+              ```bash
+              sudo apt install libsdl2-2.0-0 libsdl2-image-2.0-0 libsdl2-mixer-2.0-0 libsdl2-ttf-2.0-0
+              ```
+          draft: false
+          prerelease: false
+

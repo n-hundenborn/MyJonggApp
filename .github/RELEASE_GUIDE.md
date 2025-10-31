@@ -1,108 +1,92 @@
 # Release Guide
 
-This project uses GitHub Actions to automatically build executables for Windows and Linux.
+This guide explains how to create a new release of MyJongg Calculator.
 
-## Creating a New Release
+## Quick Release Process
 
-### Option 1: Using Git Tags (Recommended)
+```bash
+# 1. Ensure all changes are committed and pushed
+git add .
+git commit -m "Your changes"
+git push
 
-1. **Commit and push all changes:**
-   ```bash
-   git add .
-   git commit -m "Prepare for release v1.0.0"
-   git push
-   ```
+# 2. Create and push a version tag
+git tag v1.0.0
+git push origin v1.0.0
 
-2. **Create and push a version tag:**
-   ```bash
-   git tag v1.0.0
-   git push origin v1.0.0
-   ```
+# 3. Wait ~10-15 minutes
+# GitHub Actions will automatically:
+# - Build Windows executable (.zip)
+# - Build Linux executable (.tar.gz)
+# - Create a new release with both files attached
+```
 
-3. **Wait for GitHub Actions:**
-   - Go to your repository on GitHub
-   - Click the "Actions" tab
-   - Watch the build progress (~10-15 minutes)
+## Version Numbering
 
-4. **Download your executables:**
-   - Go to "Releases" tab
-   - Your new release will appear with both Windows and Linux builds attached
+Follow [Semantic Versioning](https://semver.org/):
 
-### Option 2: Manual Trigger (For Testing)
-
-1. Go to your repository on GitHub
-2. Click "Actions" tab
-3. Select "Build Cross-Platform Executables" workflow
-4. Click "Run workflow" button
-5. Select branch and click "Run workflow"
-6. Executables will be available as artifacts (not as a release)
-
-## Version Naming Convention
-
-Use semantic versioning:
-- `v1.0.0` - Major release
-- `v1.1.0` - Minor update (new features)
-- `v1.0.1` - Patch (bug fixes)
+- **v1.0.0** - Major release (breaking changes)
+- **v1.1.0** - Minor release (new features, backwards compatible)
+- **v1.0.1** - Patch release (bug fixes)
 
 ## What Happens Automatically
 
 When you push a tag starting with `v`:
 
-1. ✅ Windows executable is built (`MyJongg Calculator.exe`)
-2. ✅ Linux executable is built (`MyJongg-Calculator`)
-3. ✅ Both are packaged (zip for Windows, tar.gz for Linux)
-4. ✅ GitHub Release is created with:
-   - Release notes
-   - Download links
-   - Installation instructions
-   - Both executables attached
+1. **Windows Build** (~8 minutes)
+   - Installs Python and dependencies
+   - Builds with PyInstaller
+   - Creates `MyJongg-Calculator-Windows.zip`
+
+2. **Linux Build** (~8 minutes)
+   - Installs system libraries (SDL2, etc.)
+   - Builds with PyInstaller
+   - Creates `MyJongg-Calculator-Linux.tar.gz`
+
+3. **Release Creation**
+   - Creates GitHub Release with your tag
+   - Attaches both executables
+   - Includes installation instructions
+
+## Monitoring the Build
+
+1. Go to: `https://github.com/<your-username>/<repo-name>/actions`
+2. Click on the latest "Build and Release" workflow
+3. Watch progress of Windows and Linux builds
+4. Once complete, check the Releases page
 
 ## Troubleshooting
 
-### Build fails on Windows
-- Check that `requirements.lock` has all dependencies
-- Verify `app.spec` is correct
-- Check Actions logs for specific errors
+**Build fails:**
+- Check the Actions tab for error logs
+- Ensure `requirements.lock` is up to date
+- Verify `.spec` files are correct
 
-### Build fails on Linux
-- Check that `app_linux.spec` is correct
-- Verify no Windows-specific code was added
-- Check Actions logs for dependency issues
+**Release not created:**
+- Tag must start with `v` (e.g., `v1.0.0`, not `1.0.0`)
+- Check repository permissions (Actions needs write access)
 
-### Release not created
-- Ensure you pushed a tag starting with `v` (e.g., `v1.0.0`)
-- Check repository permissions in Settings > Actions
-
-## Example Release Workflow
-
+**Deleting a failed release:**
 ```bash
-# 1. Make changes and test locally
-python src/main.py
-
-# 2. Commit changes
-git add .
-git commit -m "Add new feature X"
-git push
-
-# 3. Create release
-git tag v1.2.0
-git push origin v1.2.0
-
-# 4. Wait ~10 minutes, then check GitHub Releases page
-```
-
-## Deleting a Release/Tag
-
-If you need to redo a release:
-
-```bash
-# Delete local tag
-git tag -d v1.0.0
-
 # Delete remote tag
 git push --delete origin v1.0.0
 
-# Delete the release on GitHub (via web UI)
-# Then create the tag again
+# Delete local tag
+git tag -d v1.0.0
+
+# Then create it again with the same or different version
 ```
 
+## Manual Build (for testing)
+
+Before creating a release, test builds locally:
+
+**Windows:**
+```cmd
+build_windows.bat
+```
+
+**Linux:**
+```bash
+./build_linux.sh
+```
