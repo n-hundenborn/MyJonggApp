@@ -1,7 +1,7 @@
 from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.properties import ObjectProperty, StringProperty
-from frontend.screens.config import font_config
+from frontend.shared.styles import font_config
 import pandas as pd
 
 class GameOverScreen(Screen):

@@ -1,7 +1,6 @@
 import logging
 from logging import getLogger, DEBUG
-import pandas as pd
-import os
+
 
 def setup_logger(logger_name: str, file_name: str = 'app.log', verbose: bool = True) -> logging.Logger:
     """Configure and return a logger that saves logs to a file.
@@ -71,78 +70,3 @@ def calculate_ranks(items, key_func=lambda x: x.points):
         current_rank += len(items_at_this_value)
     
     return rank_map
-
-def prepare_dataframes_for_saving(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.DataFrame]:
-    """Saves game data to an Excel file with German column names.
-    
-    Args:
-        df: DataFrame containing round-by-round data
-        filename: Name of the file to save the data to
-        
-    Returns:
-        str: Path to the created Excel file
-    """
-    # Create standings DataFrame from the last round
-    last_round = df['round'].max()
-    df_standings = df[df['round'] == last_round][
-        ['wind', 'player', 'running_sum', 'rank']
-    ].sort_values('rank')
-    
-    # Define column name mappings
-    rounds_columns = {
-        'round': 'Runde',
-        'round_wind': 'Wind der Runde',
-        'winner': 'Gewinner',
-        'player': 'Spieler',
-        'wind': 'Wind',
-        'base_points': 'Basispunkte',
-        'doublings': 'Verdopplungen',
-        'calculated_points': 'Rundenpunkte',
-        'net_points': 'Punkteänderung',
-        'running_sum': 'Laufende Summe',
-        'rank': 'Rang'
-    }
-    
-    standings_columns = {
-        'wind': 'Wind',
-        'player': 'Spieler',
-        'running_sum': 'Laufende Summe',
-        'rank': 'Rang'
-    }
-    
-    # Create copies with German column names for Excel
-    df_rounds_german = df.copy()
-    df_rounds_german.rename(columns=rounds_columns, inplace=True)
-    
-    df_standings_german = df_standings.copy()
-    df_standings_german.rename(columns=standings_columns, inplace=True)
-    
-    return df_rounds_german, df_standings_german
-
-def save_dataframes_to_excel(df_rounds: pd.DataFrame, df_standings: pd.DataFrame, filename: str, folder_path: str = None) -> str:
-    filename = filename + ".xlsx"
-    
-    # Use folder_path if provided, otherwise save in current directory
-    if folder_path:
-        full_path = os.path.join(folder_path, filename)
-    else:
-        full_path = filename
-    
-    with pd.ExcelWriter(full_path, engine='openpyxl') as writer:
-        df_rounds.to_excel(writer, sheet_name='Runden', index=False)
-        df_standings.to_excel(writer, sheet_name='Endstand', index=False)
-        
-        # Adjust column widths for Runden sheet
-        worksheet = writer.sheets['Runden']
-        for col in 'ABCDEFGHIJK':
-            worksheet.column_dimensions[col].width = 18
-
-        # Adjust column widths for Endstand sheet
-        worksheet = writer.sheets['Endstand']
-        for col in 'ABCD':
-            worksheet.column_dimensions[col].width = 18
-    
-    logger = getLogger(__name__)
-    logger.info(f"Game results saved to {full_path}")
-    
-    return full_path

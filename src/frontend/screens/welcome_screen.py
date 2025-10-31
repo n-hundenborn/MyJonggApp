@@ -1,16 +1,16 @@
 from kivy.uix.screenmanager import Screen
-from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty, StringProperty
 from backend.game import Game
 from datetime import datetime
 import os
-from plyer import filechooser
+import sys
+from tkinter import filedialog
+import tkinter as tk
 
 class WelcomeScreen(Screen):
     """Welcome screen for selecting game folder before starting a new game."""
     game: Game = ObjectProperty(None)
     folder_info = StringProperty("Kein Ordner ausgewählt")
-    last_used_folder = StringProperty("")
     can_proceed = ObjectProperty(False)
 
     def __init__(self, **kwargs):
@@ -25,7 +25,18 @@ class WelcomeScreen(Screen):
     def update_folder_info(self):
         """Update the folder info display."""
         if self.game and self.game.game_folder:
-            self.folder_info = f"Spielordner: {self.game.game_folder}"
+            # Shorten the path if it's too long
+            path = self.game.game_folder
+            if len(path) > 50:  # Adjust this number based on your needs
+                # Keep the first part and last part, with ... in between
+                parts = path.split(os.sep)
+                if len(parts) > 4:
+                    shortened = os.sep.join([parts[0], '...'] + parts[-2:])
+                else:
+                    shortened = path
+            else:
+                shortened = path
+            self.folder_info = f"Rundenordner:\n{shortened}"
             self.can_proceed = True
         else:
             self.folder_info = "Kein Ordner ausgewählt"
@@ -35,22 +46,41 @@ class WelcomeScreen(Screen):
         """Generate default folder name in format mahjongg-YYYY-MM-DD."""
         return f"mahjongg-{datetime.now().strftime('%Y-%m-%d')}"
 
+    def get_program_directory(self) -> str:
+        """Get the directory where the program is located."""
+        if hasattr(sys, '_MEIPASS'):
+            # Running as PyInstaller bundle, use the directory of the executable
+            return os.path.dirname(sys.executable)
+        else:
+            # Running as script, use current working directory
+            return os.getcwd()
+    
     def select_folder(self):
         """Open folder picker dialog to select/create game folder."""
-        # Use last used folder as starting directory if available
-        start_dir = self.last_used_folder if self.last_used_folder else os.getcwd()
+        # Determine starting directory with priority:
+        # 1. Previous game folder (if exists)
+        # 2. Program directory
+        start_dir = self.get_program_directory()
+        
+        if self.game and self.game.game_folder and os.path.exists(self.game.game_folder):
+            start_dir = self.game.game_folder
         
         try:
-            selected_folder = filechooser.choose_dir(
+            # Create a hidden root window for the dialog
+            root = tk.Tk()
+            root.withdraw()  # Hide the root window
+            root.attributes('-topmost', True)  # Bring dialog to front
+            
+            selected_folder = filedialog.askdirectory(
                 title="Spielordner auswählen oder erstellen",
-                path=start_dir
+                initialdir=start_dir
             )
             
-            if selected_folder and len(selected_folder) > 0:
-                folder_path = selected_folder[0]
-                print(f"Selected folder: {folder_path}")
-                self.set_game_folder(folder_path)
-                self.last_used_folder = folder_path
+            root.destroy()  # Clean up the root window
+            
+            if selected_folder:
+                print(f"Selected folder: {selected_folder}")
+                self.set_game_folder(selected_folder)
                 print(f"Can proceed: {self.can_proceed}")
             else:
                 # User cancelled, stay on welcome screen
@@ -61,9 +91,9 @@ class WelcomeScreen(Screen):
             # Stay on welcome screen if there's an error
 
     def use_default_folder(self):
-        """Create and use default folder in current directory."""
+        """Create and use default folder in program directory."""
         default_name = self.get_default_folder_name()
-        default_path = os.path.join(os.getcwd(), default_name)
+        default_path = os.path.join(self.get_program_directory(), default_name)
         
         try:
             # Create folder if it doesn't exist
@@ -72,7 +102,6 @@ class WelcomeScreen(Screen):
             
             print(f"Using default folder: {default_path}")
             self.set_game_folder(default_path)
-            self.last_used_folder = default_path
             print(f"Can proceed: {self.can_proceed}")
             
         except Exception as e:

@@ -36,6 +36,7 @@ cython_debug/
 
 # IDE specific files
 .idea/
+.cursor/
 .vscode/
 *.sublime-project
 *.sublime-workspace

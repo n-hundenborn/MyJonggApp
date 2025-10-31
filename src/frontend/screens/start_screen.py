@@ -4,7 +4,8 @@ from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty
 from backend.game import Wind, Game
-from frontend.screens.config import IDIOT_NAMES, font_config
+from frontend.shared.config import IDIOT_NAMES
+from frontend.shared.styles import font_config
 from random import sample
 
 class StartScreen(Screen):
@@ -25,15 +26,21 @@ class StartScreen(Screen):
         for wind in list(Wind):
             player_layout = BoxLayout()
             player_layout.add_widget(Label(
-                text=str(wind), 
-                font_size=font_size
+                text=str(wind),
+                font_size=font_size,
+                height=font_size * 2.5,  # Match TextInput height
+                size_hint_y=None,  # Disable vertical size hint
+                valign='middle',  # Vertical center alignment
+                text_size=(None, font_size * 2.5)  # Enable text vertical alignment
             ))
             player_input = TextInput(
                 multiline=False,
                 write_tab=False,
                 font_size=font_size,
                 halign='left',
-                padding=[10, (self.height - font_size) / 2]  # horizontal padding, vertical padding
+                padding_y=(font_size/2, font_size/2),
+                height=font_size * 2.5,
+                size_hint_y=None,
             )
             player_input.bind(on_text_validate=self.on_text_validate)
             self.player_inputs.append(player_input)
@@ -68,7 +75,8 @@ class StartScreen(Screen):
             player_names.append(name)
         
         self.game.set_players(player_names)
-        self.manager.current = 'scoreboard'
+        self.game.start_game()
+        self.manager.current = 'add_points'
 
     def update_fonts(self):
         """Update all font sizes when window is resized"""

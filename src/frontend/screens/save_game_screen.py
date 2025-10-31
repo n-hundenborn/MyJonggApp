@@ -2,8 +2,8 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty, StringProperty
-from frontend.screens.config import font_config
-from backend.helper_functions import prepare_dataframes_for_saving, save_dataframes_to_excel
+from frontend.shared.styles import font_config
+from backend.data_export import prepare_dataframes_for_saving, save_dataframes_to_excel
 from datetime import datetime
 import pandas as pd
 from kivy.clock import Clock
@@ -25,7 +25,7 @@ class SaveGameScreen(Screen):
         
         # Add title
         title = Label(
-            text="Spiel speichern",
+            text="Speichern",
             font_size=font_config.font_size_big,
             size_hint_y=0.2
         )
@@ -33,7 +33,7 @@ class SaveGameScreen(Screen):
 
         # Add helper label for filename input
         filename_helper = Label(
-            text="Bitte geben Sie einen Dateinamen für die Spielaufzeichnung ein:",
+            text="Bitte geben Sie einen Dateinamen für die Rundenaufzeichnung ein:",
             font_size=font_config.font_size_medium,
             size_hint_y=0.1
         )
@@ -66,25 +66,25 @@ class SaveGameScreen(Screen):
         self.ids.save_container.add_widget(self.status_label)
 
     def save_game(self):
-        # If already saved, just proceed to stats
+        # If already saved, just proceed to final screen
         if self.is_saved:
-            self.proceed_to_stats()
+            self.proceed_to_final()
             return
 
         if self.game_data is None:
-            show_error("Keine Spieldaten vorhanden")
+            show_error("Keine Rundendaten vorhanden")
             return
 
         # Use default filename if input is empty
         timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-        default_filename = f"mahjongg_game_{timestamp}"
+        default_filename = f"mahjongg_round_{timestamp}"
         filename = f"{self.filename_input.text or default_filename}"
         
         # Disable input field and update with final filename
         self.filename_input.text = filename
         self.filename_input.disabled = True
         
-        self.save_status = "Speichere Spielstatistiken..."
+        self.save_status = "Speichere Statistiken..."
         self.status_label.text = self.save_status
         
         def save_and_update_button(dt):
@@ -93,20 +93,20 @@ class SaveGameScreen(Screen):
                 # Get folder path from the game instance
                 folder_path = self.game.game_folder if self.game else None
                 
-                filename_saved = save_dataframes_to_excel(df_rounds, df_standings, filename, folder_path)
-                self.save_status = f"Spiel erfolgreich gespeichert als {filename_saved}"
+                filename_saved = save_dataframes_to_excel(df_rounds, df_standings, filename, folder_path, game=self.game)
+                self.save_status = f"Runde erfolgreich gespeichert unter {filename_saved}."
                 self.status_label.text = self.save_status
                 # Update button text and behavior
                 save_button = self.ids.save_button
-                save_button.text = 'Weiter zu Statistiken'
+                save_button.text = 'Weiter'
                 self.is_saved = True  # Mark as saved after successful save
             except Exception as e:
                 show_error(f"Fehler beim Speichern: {str(e)}")
 
         Clock.schedule_once(save_and_update_button, 0.1)
 
-    def proceed_to_stats(self):
-        self.manager.current = 'stats'
+    def proceed_to_final(self):
+        self.manager.current = 'final'
 
     def update_data(self, game_data: pd.DataFrame):
         self.game_data = game_data
@@ -124,7 +124,7 @@ class SaveGameScreen(Screen):
             for child in self.ids.save_container.children:
                 if isinstance(child, Label):
                     # Title gets big font, others get medium font
-                    if child.text == "Spiel speichern":
+                    if child.text == "Speichern":
                         child.font_size = font_config.font_size_big
                     else:
                         child.font_size = font_config.font_size_medium

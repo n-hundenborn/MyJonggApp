@@ -3,6 +3,7 @@ from itertools import combinations
 from dataclasses import dataclass, field
 from backend.helper_functions import setup_logger
 import pandas as pd
+from datetime import datetime, timezone
 
 # Configure logger
 logger = setup_logger(__name__)
@@ -153,6 +154,8 @@ class Game:
     round_wind: Wind = Wind.EAST
     game_data: pd.DataFrame = None
     game_folder: str = None
+    start_time: datetime = None
+    end_time: datetime = None
     
     @property
     def current_round_number(self) -> int:
@@ -177,6 +180,16 @@ class Game:
             folder_path: Path to the folder where the game file should be saved.
         """
         self.game_folder = folder_path
+
+    def start_game(self) -> None:
+        """Capture the start time of the game with local timezone."""
+        self.start_time = datetime.now(tz=timezone.utc).astimezone()
+        logger.info(f"Game started at {self.start_time.isoformat()}")
+
+    def end_game(self) -> None:
+        """Capture the end time of the game with local timezone."""
+        self.end_time = datetime.now(tz=timezone.utc).astimezone()
+        logger.info(f"Game ended at {self.end_time.isoformat()}")
 
     def start_new_round(self, winner_wind: Wind) -> None:
         """Sets round wind according to the last wind and winning wind."""
@@ -273,4 +286,17 @@ class Game:
                 rounds_data.append(round_info)
         self.game_data = pd.DataFrame(rounds_data)
         return self.game_data
+    
+    def reset_game(self) -> None:
+        """Reset all game attributes except game_folder.
+        
+        This allows starting a new game while keeping the same save folder.
+        """
+        self.rounds = []
+        self.players = []
+        self.round_wind = Wind.EAST
+        self.game_data = None
+        self.start_time = None
+        self.end_time = None
+        logger.info("Game reset, keeping folder: %s", self.game_folder)
     
