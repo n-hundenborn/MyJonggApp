@@ -15,6 +15,7 @@ Cross-platform Mahjong score calculator built with Kivy.
 - [Automated Releases (GitHub Actions)](#-automated-releases-github-actions)
 - [Windows Installation & Build](#windows-installation-guide)
 - [Linux Installation & Build](#linux-installation-guide)
+  - [Building Linux on Windows (WSL2)](#building-linux-executables-on-windows-11-wsl2)
 - [Key Differences Between Platforms](#key-differences-between-platforms)
 - [Development Quick Reference](#development-quick-reference)
 
@@ -280,6 +281,110 @@ python main.py
 
 4. **File dialog issues**
    - Install: `sudo apt install python3-tk zenity`
+
+### Building Linux Executables on Windows 11 (WSL2)
+
+You can build Linux executables on Windows using WSL2 (Windows Subsystem for Linux).
+
+#### 1. Install WSL2
+
+Open PowerShell as Administrator:
+```powershell
+wsl --install
+```
+
+Restart your computer if prompted. This installs Ubuntu by default.
+
+#### 2. Enter WSL
+
+```powershell
+wsl
+```
+
+#### 3. Navigate to Your Project
+
+```bash
+cd /mnt/c/Users/YourUsername/path/to/MyJongApp
+```
+
+Replace with your actual project location on Windows. Windows drives are accessible via `/mnt/c/`, `/mnt/d/`, etc.
+
+#### 4. Install Dependencies
+
+```bash
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Python and dev tools
+sudo apt install python3 python3-pip python3-venv -y
+
+# Install system dependencies for Kivy
+sudo apt install libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
+                 libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev \
+                 zlib1g-dev libgstreamer1.0-dev gstreamer1.0-plugins-base \
+                 gstreamer1.0-plugins-good -y
+```
+
+**⚠️ IMPORTANT: Virtual Environment Location**
+
+Creating venvs on Windows filesystem mounts (`/mnt/c/...`) often fails in WSL. Use one of these approaches:
+
+**Option A: Copy project to Linux filesystem (Recommended - Faster)**
+```bash
+# Copy project to Linux home directory
+cp -r /mnt/c/Users/YourUsername/path/to/MyJongApp ~/MyJongApp
+cd ~/MyJongApp
+
+# Create venv (works reliably here)
+python3 -m venv .venv-linux
+source .venv-linux/bin/activate
+
+# Install dependencies with pip
+pip install -r requirements.lock
+pip install pyinstaller
+
+# OR use uv (much faster)
+pip install uv
+uv pip install -r requirements.lock
+uv pip install pyinstaller
+
+# After building, copy dist back to Windows
+cp -r dist /mnt/c/Users/YourUsername/path/to/MyJongApp/
+```
+
+**Option B: Stay on Windows mount (if you prefer)**
+```bash
+# Create venv without pip
+python3 -m venv --without-pip .venv-linux
+source .venv-linux/bin/activate
+
+# Install pip manually
+curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
+python get-pip.py
+rm get-pip.py
+
+# Install dependencies with pip
+pip install -r requirements.lock
+pip install pyinstaller
+
+# OR use uv (much faster)
+pip install uv
+uv pip install -r requirements.lock
+uv pip install pyinstaller
+```
+
+**Option A is recommended** because Linux filesystem operations are significantly faster than through Windows mounts.
+
+#### 5. Build
+
+```bash
+chmod +x build_linux.sh
+./build_linux.sh
+```
+
+The executable will be in `dist/MyJongg-Calculator`.
+
+**Note:** GUI apps can't run directly in WSL2. Test the executable on an actual Linux machine or use the automated GitHub Actions workflow.
 
 ---
 
