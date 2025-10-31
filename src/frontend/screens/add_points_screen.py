@@ -3,10 +3,13 @@ from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.uix.checkbox import CheckBox
-from kivy.properties import ObjectProperty, NumericProperty
+from kivy.properties import ObjectProperty, NumericProperty, BooleanProperty
 from backend.game import Game, Wind
 from backend.helper_functions import setup_logger
-from frontend.screens.config import ACCENT_COLOR, HIGHLIGHT_COLOR, font_config
+from frontend.shared.styles import (
+    font_config, K_PRIMARY, K_WARNING,
+    apply_button_style, apply_input_style
+)
 from kivy.graphics import Color, Rectangle
 from kivy.animation import Animation
 from frontend.components.popups import show_error
@@ -18,6 +21,7 @@ class AddPointsScreen(Screen):
     """A screen for adding points to players."""
     game: Game = ObjectProperty(None)
     current_round_number = NumericProperty(0)
+    first_time = BooleanProperty(True)
 
     def __init__(self, **kwargs):
         """Initialize the AddPointsScreen."""
@@ -26,6 +30,7 @@ class AddPointsScreen(Screen):
         self.winner_selection = None
         self.calculated_points_labels = {}
         self.rect = None
+        self.first_time = True
 
     def on_enter(self):
         self.current_round_number = self.game.current_round_number
@@ -39,12 +44,12 @@ class AddPointsScreen(Screen):
             # Add background color for round wind player
             if player.wind == self.game.round_wind:
                 with player_layout.canvas.before:
-                    Color(*ACCENT_COLOR)
+                    Color(*K_PRIMARY)
                     self.rect = Rectangle(pos=player_layout.pos, size=player_layout.size)
                 player_layout.bind(pos=self._update_rect, size=self._update_rect)
 
             player_label = Label(
-                text=f"{player.show()}:",
+                text=player.show(),
                 font_size=font_config.font_size_medium
             )
             
@@ -77,8 +82,6 @@ class AddPointsScreen(Screen):
             # Use Wind instance as key
             self.player_inputs[player.wind] = (points_input, times_doubled_input)
             player_layout.add_widget(player_label)
-            player_layout.add_widget(points_input)
-            player_layout.add_widget(times_doubled_input)
             
             # Add winner checkbox with background for flashing
             checkbox_container = BoxLayout()
@@ -93,7 +96,19 @@ class AddPointsScreen(Screen):
             checkbox_container.add_widget(winner_checkbox)
             player_layout.add_widget(checkbox_container)
             
+            player_layout.add_widget(points_input)
+            player_layout.add_widget(times_doubled_input)
+            
             self.ids.players_layout.add_widget(player_layout)
+        
+        # Set focus to the first player's points input after all widgets are created
+        if self.game.players:
+            first_wind = self.game.players[0].wind
+            self.player_inputs[first_wind][0].focus = True
+    
+    def on_leave(self):
+        """Called when leaving the screen"""
+        self.first_time = False
 
     def update_fonts(self):
         """Update all font sizes when window is resized"""
@@ -121,15 +136,25 @@ class AddPointsScreen(Screen):
             instance.text = '0'
 
     def on_text_validate(self, instance):
-        current_key = next((wind for wind, (input, _) in self.player_inputs.items() if input == instance), None)
-        if current_key:
-            keys = list(self.player_inputs.keys())
-            current_index = keys.index(current_key)
-            if current_index < len(keys) - 1:
-                next_key = keys[current_index + 1]
-                self.player_inputs[next_key][0].focus = True
-            else:
-                self.submit_points()
+        # Find which player and which input field (points or times_doubled) triggered this
+        for wind, (points_input, times_doubled_input) in self.player_inputs.items():
+            if instance == points_input:
+                # If we're in the points input, move to times_doubled input of the same player
+                times_doubled_input.focus = True
+                return
+            elif instance == times_doubled_input:
+                # If we're in times_doubled input, find the next player's points input
+                keys = list(self.player_inputs.keys())
+                current_index = keys.index(wind)
+                if current_index < len(keys) - 1:
+                    # Move to next player's points input
+                    next_key = keys[current_index + 1]
+                    self.player_inputs[next_key][0].focus = True
+                    return
+                else:
+                    # We're in the last player's times_doubled input, submit the points
+                    self.submit_points()
+                    return
 
     def on_winner_selected(self, player_wind: Wind, value: bool) -> None:
         if value:
@@ -147,11 +172,11 @@ class AddPointsScreen(Screen):
                 if isinstance(child, BoxLayout):
                     checkbox_container = next((w for w in child.children if isinstance(w, BoxLayout)), None)
                     if checkbox_container and hasattr(checkbox_container, 'rect'):
-                        # Flash animation with HIGHLIGHT_COLOR
+                        # Flash animation with K_WARNING
                         anim = (
-                            Animation(rgba=(*HIGHLIGHT_COLOR[:3], 0.8), duration=0.2) +
+                            Animation(rgba=(*K_WARNING[:3], 0.8), duration=0.2) +
                             Animation(rgba=(0, 0, 0, 0), duration=0.2) +
-                            Animation(rgba=(*HIGHLIGHT_COLOR[:3], 0.8), duration=0.2) +
+                            Animation(rgba=(*K_WARNING[:3], 0.8), duration=0.2) +
                             Animation(rgba=(0, 0, 0, 0), duration=0.2)
                         )
                         anim.start(checkbox_container.canvas.before.children[0])
@@ -171,7 +196,7 @@ class AddPointsScreen(Screen):
                 
                 # Check if the calculated value is too large
                 if calculated_value > 999999999:  # 1 billion - 1
-                    show_error("Die berechneten Punkte sind zu groß. Bitte reduzieren Sie die Punkte oder die Verdoppelungen.")
+                    show_error("Herzlichen Glückwunsch. Du hast die maximal möglichen Punkte erreicht und das Programm zum Absturz gebracht. Hoffentlich bist du stolz.")
                     return
                     
                 points[wind] = (points_value, times_doubled)
@@ -195,3 +220,8 @@ class AddPointsScreen(Screen):
         if hasattr(self, 'ids') and hasattr(self.ids, 'players_layout'):
             self.ids.players_layout.clear_widgets()
             self.on_enter()
+
+        # Apply styles to inputs only - buttons are styled by KV file
+        for input_field in self.player_inputs.values():
+            apply_input_style(input_field[0])
+            apply_input_style(input_field[1])
