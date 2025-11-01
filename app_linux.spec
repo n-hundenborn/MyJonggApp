@@ -16,34 +16,36 @@ for root, dirs, files in os.walk(src_root):
             rel_path = os.path.relpath(os.path.dirname(source_path), src_root)
             kv_files.append((source_path, rel_path))
 
+from PyInstaller.utils.hooks import collect_all, copy_metadata
+
+# Collect all numpy and pandas components properly
+numpy_datas, numpy_binaries, numpy_hiddenimports = collect_all('numpy')
+pandas_datas, pandas_binaries, pandas_hiddenimports = collect_all('pandas')
+
 a = Analysis(
     [os.path.join(src_root, 'main.py')],  # Your main script
     pathex=[src_root],
-    binaries=[],
+    binaries=numpy_binaries + pandas_binaries,
     datas=[
         (os.path.join(assets_root, 'icon.png'), 'assets'),  # Include icon (PNG for Linux)
         *kv_files,  # Include all found .kv files
+        *numpy_datas,
+        *pandas_datas,
+        *copy_metadata('numpy'),
+        *copy_metadata('pandas'),
     ],
     hiddenimports=[
         'kivy',
         'kivymd',
-        'pandas',
-        'pandas._libs',
-        'pandas._libs.tslibs',
-        'pandas._libs.tslibs.timedeltas',
-        'pandas._libs.tslibs.np_datetime',
-        'pandas._libs.tslibs.nattype',
-        'pandas._libs.skiplist',
-        'numpy',
-        'numpy.core',
-        'numpy.core._multiarray_umath',
         'openpyxl',
         'tkinter',
         'tkinter.filedialog',
+        *numpy_hiddenimports,
+        *pandas_hiddenimports,
     ],
     hookspath=[],
     hooksconfig={},
-    runtime_hooks=[],
+    runtime_hooks=[os.path.join(spec_root, 'hook-numpy.py')],
     excludes=[
         'numpy.core.tests',
         'numpy.tests',
