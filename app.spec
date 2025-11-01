@@ -6,7 +6,7 @@ block_cipher = None
 
 a = Analysis(
     ['src\\main.py'],
-    pathex=[],
+    pathex=[os.path.abspath('src')],
     binaries=[],
     datas=[
         ('src\\game.kv', '.'),
