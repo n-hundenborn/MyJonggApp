@@ -75,14 +75,14 @@ class FinalScreen(Screen):
         """Open the game folder in the system file explorer"""
         if self.game and self.game.game_folder:
             folder_path = self.game.game_folder
-            if os.path.exists(folder_path):
+            if folder_path.exists():
                 if os.name == 'nt':  # Windows
-                    subprocess.Popen(['explorer', folder_path])
+                    subprocess.Popen(['explorer', str(folder_path)])
                 elif os.name == 'posix':  # macOS and Linux
                     if os.uname().sysname == 'Darwin':  # macOS
-                        subprocess.Popen(['open', folder_path])
+                        subprocess.Popen(['open', str(folder_path)])
                     else:  # Linux
-                        subprocess.Popen(['xdg-open', folder_path])
+                        subprocess.Popen(['xdg-open', str(folder_path)])
     
     def start_new_game(self):
         """Reset the game and navigate to welcome screen"""

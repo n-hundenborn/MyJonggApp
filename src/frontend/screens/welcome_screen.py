@@ -6,6 +6,7 @@ import os
 import sys
 from tkinter import filedialog
 import tkinter as tk
+from pathlib import Path
 
 class WelcomeScreen(Screen):
     """Welcome screen for selecting game folder before starting a new game."""
@@ -26,12 +27,12 @@ class WelcomeScreen(Screen):
         """Update the folder info display."""
         if self.game and self.game.game_folder:
             # Shorten the path if it's too long
-            path = self.game.game_folder
-            if len(path) > 50:  # Adjust this number based on your needs
+            path = str(self.game.game_folder)
+            if len(path) > 70:  # Adjust this number based on your needs
                 # Keep the first part and last part, with ... in between
-                parts = path.split(os.sep)
+                parts = self.game.game_folder.parts
                 if len(parts) > 4:
-                    shortened = os.sep.join([parts[0], '...'] + parts[-2:])
+                    shortened = str(self.game.game_folder.parts[0]) + os.sep + '...' + os.sep + os.sep.join(parts[-2:])
                 else:
                     shortened = path
             else:
@@ -62,8 +63,8 @@ class WelcomeScreen(Screen):
         # 2. Program directory
         start_dir = self.get_program_directory()
         
-        if self.game and self.game.game_folder and os.path.exists(self.game.game_folder):
-            start_dir = self.game.game_folder
+        if self.game and self.game.game_folder and self.game.game_folder.exists():
+            start_dir = str(self.game.game_folder)
         
         try:
             # Create a hidden root window for the dialog
@@ -107,7 +108,7 @@ class WelcomeScreen(Screen):
         except Exception as e:
             print(f"Error creating default folder: {e}")
 
-    def set_game_folder(self, folder_path: str):
+    def set_game_folder(self, folder_path: str | Path):
         """Set the game folder and update display."""
         if self.game:
             self.game.set_game_folder(folder_path)

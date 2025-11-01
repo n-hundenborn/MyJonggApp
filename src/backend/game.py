@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from backend.helper_functions import setup_logger
 import pandas as pd
 from datetime import datetime, timezone
+from pathlib import Path
 
 # Configure logger
 logger = setup_logger(__name__)
@@ -153,7 +154,7 @@ class Game:
     players: list[Player] = field(default_factory=list)
     round_wind: Wind = Wind.EAST
     game_data: pd.DataFrame = None
-    game_folder: str = None
+    game_folder: Path = None
     start_time: datetime = None
     end_time: datetime = None
     
@@ -173,13 +174,13 @@ class Game:
         """
         self.players = [Player(name, wind) for name, wind in zip(player_names, Wind)]
 
-    def set_game_folder(self, folder_path: str) -> None:
+    def set_game_folder(self, folder_path: str | Path) -> None:
         """Set the folder path where the game file will be saved.
         
         Args:
             folder_path: Path to the folder where the game file should be saved.
         """
-        self.game_folder = folder_path
+        self.game_folder = Path(folder_path) if isinstance(folder_path, str) else folder_path
 
     def start_game(self) -> None:
         """Capture the start time of the game with local timezone."""

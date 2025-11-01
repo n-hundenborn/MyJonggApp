@@ -8,6 +8,7 @@ from datetime import datetime
 import pandas as pd
 from kivy.clock import Clock
 from frontend.components.popups import show_error
+from pathlib import Path
 import os
 
 class SaveGameScreen(Screen):
@@ -19,7 +20,7 @@ class SaveGameScreen(Screen):
         super().__init__(**kwargs)
         self.filename_input = None
         self.save_button = None
-        self.is_saved = False  # New flag to track save status
+        self.is_saved = False
 
     def on_enter(self):
         # Reset save status for new game
@@ -88,12 +89,12 @@ class SaveGameScreen(Screen):
         # Check if file already exists
         folder_path = self.game.game_folder if self.game else None
         if folder_path:
-            full_path = os.path.join(folder_path, f"{filename}.xlsx")
+            full_path = folder_path / f"{filename}.xlsx"
         else:
-            full_path = f"{filename}.xlsx"
+            full_path = Path(f"{filename}.xlsx")
         
         if os.path.exists(full_path):
-            show_error(f"Die Datei '{filename}.xlsx' existiert bereits.\nBitte wählen Sie einen anderen Dateinamen.")
+            show_error(f"Die Datei '{full_path}' existiert bereits.\nBitte wählen Sie einen anderen Dateinamen.")
             return
         
         # Disable input field and update with final filename
