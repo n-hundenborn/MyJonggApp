@@ -59,7 +59,7 @@ class FinalScreen(Screen):
         
         # Add wins distribution
         wins = self.game_data.drop_duplicates('round')['winner'].value_counts()
-        wins_text = "\n\nGewonnene Runden:\n"
+        wins_text = "\n\nGewonnene Spiele:\n"
         for wind, count in wins.items():
             wins_text += f"{wind}: {int(count)}\n"
         

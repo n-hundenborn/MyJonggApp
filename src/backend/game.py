@@ -199,7 +199,7 @@ class Game:
     def process_points_input(self, points_dict: dict[Wind, tuple[int, int]], 
                            winner: Wind) -> None:
         logger.debug(f"Processing points input: {points_dict} with winner: {winner}")
-        input_logger.debug(f"Round {self.current_round_number} with winner: {winner}")
+        input_logger.debug(f"Game {self.current_round_number} with winner: {winner}")
         scores = []
         for wind, (points, times_doubled) in points_dict.items():
             player = self._get_player_by_wind(wind)

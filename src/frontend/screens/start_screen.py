@@ -47,6 +47,11 @@ class StartScreen(Screen):
             player_layout.add_widget(player_input)
             player_inputs_container.add_widget(player_layout)
 
+    def on_enter(self):
+        """Reset player name inputs when entering the screen."""
+        for player_input in self.player_inputs:
+            player_input.text = ""
+
     def on_text_validate(self, instance):
         """Handle the 'Enter' key press in text input fields."""        
         index = self.player_inputs.index(instance)

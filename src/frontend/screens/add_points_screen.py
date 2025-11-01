@@ -34,6 +34,7 @@ class AddPointsScreen(Screen):
 
     def on_enter(self):
         self.current_round_number = self.game.current_round_number
+        self.first_time = (self.current_round_number == 1)
         self.ids.players_layout.clear_widgets()
         self.player_inputs = {}
         self.winner_selection = None
@@ -105,10 +106,6 @@ class AddPointsScreen(Screen):
         if self.game.players:
             first_wind = self.game.players[0].wind
             self.player_inputs[first_wind][0].focus = True
-    
-    def on_leave(self):
-        """Called when leaving the screen"""
-        self.first_time = False
 
     def update_fonts(self):
         """Update all font sizes when window is resized"""
