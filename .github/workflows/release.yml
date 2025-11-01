@@ -8,6 +8,7 @@ on:
 jobs:
   build-windows:
     runs-on: windows-latest
+    continue-on-error: false
     steps:
       - uses: actions/checkout@v4
       
@@ -41,6 +42,7 @@ jobs:
 
   build-linux:
     runs-on: ubuntu-latest
+    continue-on-error: false
     steps:
       - uses: actions/checkout@v4
       
@@ -51,11 +53,20 @@ jobs:
       
       - name: Install system dependencies
         run: |
-          sudo apt update
-          sudo apt install -y python3-dev \
-            libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
-            libgstreamer1.0-dev gstreamer1.0-plugins-base gstreamer1.0-plugins-good \
-            libmtdev-dev xclip xsel
+          sudo apt-get update -y
+          sudo apt-get install -y \
+            python3-dev \
+            libsdl2-dev \
+            libsdl2-image-dev \
+            libsdl2-mixer-dev \
+            libsdl2-ttf-dev \
+            libgstreamer1.0-dev \
+            gstreamer1.0-plugins-base \
+            gstreamer1.0-plugins-good \
+            libmtdev-dev \
+            xclip \
+            xsel
+        timeout-minutes: 15
       
       - name: Install uv
         run: pip install uv
@@ -82,6 +93,7 @@ jobs:
 
   create-release:
     needs: [build-windows, build-linux]
+    if: success()
     runs-on: ubuntu-latest
     permissions:
       contents: write
