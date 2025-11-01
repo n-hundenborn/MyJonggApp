@@ -1,6 +1,6 @@
 # MyJongg Calculator
 
-Cross-platform Mahjong score calculator built with Kivy.
+Cross-platform Mahjongg score calculator built with Kivy.
 
 ## 📥 Download Pre-Built Executables
 
@@ -154,7 +154,7 @@ del *.spec
 
 ### Project Structure
 ```
-MyJongApp/
+MyJonggApp/
 ├── src/
 │   ├── main.py
 │   ├── game.kv

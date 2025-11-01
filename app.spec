@@ -33,7 +33,7 @@ exe = EXE(
     a.scripts,
     [],
     exclude_binaries=True,
-    name='MyJongApp',
+    name='MyJonggApp',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -56,6 +56,6 @@ coll = COLLECT(
     strip=False,
     upx=True,
     upx_exclude=[],
-    name='MyJongApp',
+    name='MyJonggApp',
 )
 

@@ -1,6 +1,6 @@
 # Frontend Structure
 
-This directory contains all frontend-related code for the MyJongApp application.
+This directory contains all frontend-related code for the MyJonggApp application.
 
 ## Directory Structure
 
