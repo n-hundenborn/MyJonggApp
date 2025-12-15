@@ -2,12 +2,14 @@ from kivy.uix.screenmanager import Screen
 from kivy.uix.label import Label
 from kivy.uix.textinput import TextInput
 from kivy.properties import ObjectProperty, StringProperty
-from frontend.screens.config import font_config
+from frontend.shared.styles import font_config
 from backend.data_export import prepare_dataframes_for_saving, save_dataframes_to_excel
 from datetime import datetime
 import pandas as pd
 from kivy.clock import Clock
 from frontend.components.popups import show_error
+from pathlib import Path
+import os
 
 class SaveGameScreen(Screen):
     game_data = ObjectProperty(None, force_dispatch=True)
@@ -18,14 +20,18 @@ class SaveGameScreen(Screen):
         super().__init__(**kwargs)
         self.filename_input = None
         self.save_button = None
-        self.is_saved = False  # New flag to track save status
+        self.is_saved = False
 
     def on_enter(self):
+        # Reset save status for new game
+        self.is_saved = False
+        self.save_status = ""
+        
         self.ids.save_container.clear_widgets()
         
         # Add title
         title = Label(
-            text="Spiel speichern",
+            text="Speichern",
             font_size=font_config.font_size_big,
             size_hint_y=0.2
         )
@@ -33,7 +39,7 @@ class SaveGameScreen(Screen):
 
         # Add helper label for filename input
         filename_helper = Label(
-            text="Bitte geben Sie einen Dateinamen für die Spielaufzeichnung ein:",
+            text="Bitte geben Sie einen Dateinamen für die Rundenaufzeichnung ein:",
             font_size=font_config.font_size_medium,
             size_hint_y=0.1
         )
@@ -72,19 +78,30 @@ class SaveGameScreen(Screen):
             return
 
         if self.game_data is None:
-            show_error("Keine Spieldaten vorhanden")
+            show_error("Keine Rundendaten vorhanden")
             return
 
         # Use default filename if input is empty
         timestamp = datetime.now().strftime("%Y%m%d_%H%M")
-        default_filename = f"mahjongg_game_{timestamp}"
+        default_filename = f"mahjongg_round_{timestamp}"
         filename = f"{self.filename_input.text or default_filename}"
+        
+        # Check if file already exists
+        folder_path = self.game.game_folder if self.game else None
+        if folder_path:
+            full_path = folder_path / f"{filename}.xlsx"
+        else:
+            full_path = Path(f"{filename}.xlsx")
+        
+        if os.path.exists(full_path):
+            show_error(f"Die Datei '{full_path}' existiert bereits.\nBitte wählen Sie einen anderen Dateinamen.")
+            return
         
         # Disable input field and update with final filename
         self.filename_input.text = filename
         self.filename_input.disabled = True
         
-        self.save_status = "Speichere Spielstatistiken..."
+        self.save_status = "Speichere Statistiken..."
         self.status_label.text = self.save_status
         
         def save_and_update_button(dt):
@@ -94,7 +111,7 @@ class SaveGameScreen(Screen):
                 folder_path = self.game.game_folder if self.game else None
                 
                 filename_saved = save_dataframes_to_excel(df_rounds, df_standings, filename, folder_path, game=self.game)
-                self.save_status = f"Spiel erfolgreich gespeichert als {filename_saved}"
+                self.save_status = f"Runde erfolgreich gespeichert unter {filename_saved}."
                 self.status_label.text = self.save_status
                 # Update button text and behavior
                 save_button = self.ids.save_button
@@ -124,7 +141,7 @@ class SaveGameScreen(Screen):
             for child in self.ids.save_container.children:
                 if isinstance(child, Label):
                     # Title gets big font, others get medium font
-                    if child.text == "Spiel speichern":
+                    if child.text == "Speichern":
                         child.font_size = font_config.font_size_big
                     else:
                         child.font_size = font_config.font_size_medium

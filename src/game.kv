@@ -1,10 +1,23 @@
-#:import font_config frontend.screens.config.font_config
+#:import font_config frontend.shared.styles.font_config
+#:import K_PRIMARY frontend.shared.styles.K_PRIMARY
+#:import K_SECONDARY frontend.shared.styles.K_SECONDARY
+#:import SCREEN_PADDING frontend.shared.styles.SCREEN_PADDING
+#:import SECTION_SPACING frontend.shared.styles.SECTION_SPACING
+#:import WIDGET_SPACING frontend.shared.styles.WIDGET_SPACING
+
+<PrimaryButton@Button>:
+    background_normal: ''
+    background_color: K_PRIMARY
+
+<SecondaryButton@Button>:
+    background_normal: ''
+    background_color: K_SECONDARY
 
 <WelcomeScreen>:
     BoxLayout:
         orientation: 'vertical'
-        padding: [20, 20, 20, 20]
-        spacing: 20
+        padding: [SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING]
+        spacing: SECTION_SPACING
         
         # Header
         BoxLayout:
@@ -20,7 +33,7 @@
         BoxLayout:
             size_hint_y: 0.15
             Label:
-                text: "Bitte wählen Sie einen Ordner für die Spielaufzeichnung:"
+                text: "Bitte wählen Sie einen Ordner für die Rundenaufzeichnung:"
                 font_size: font_config.font_size_medium
                 halign: 'center'
                 valign: 'middle'
@@ -35,6 +48,10 @@
                 halign: 'center'
                 valign: 'middle'
                 text_size: self.size
+                shorten: True
+                shorten_from: 'right'
+                padding: [WIDGET_SPACING, 0]
+                markup: True
 
         # Spacer
         Widget:
@@ -44,20 +61,20 @@
         BoxLayout:
             size_hint_y: 0.35
             orientation: 'vertical'
-            spacing: 20
+            spacing: WIDGET_SPACING
             
-            Button:
-                text: "Spielordner auswählen/erstellen"
+            SecondaryButton:
+                text: "Rundenordner auswählen/erstellen"
                 font_size: font_config.font_size_medium
                 on_release: root.select_folder()
             
-            Button:
+            SecondaryButton:
                 text: f"Verwende {root.get_default_folder_name()}"
                 font_size: font_config.font_size_medium
                 on_release: root.use_default_folder()
             
-            Button:
-                text: "Weiter zum Spiel"
+            PrimaryButton:
+                text: "Weiter"
                 font_size: font_config.font_size_medium
                 disabled: not root.can_proceed
                 on_release: root.proceed_to_start_screen()
@@ -65,14 +82,14 @@
 <StartScreen>:
     BoxLayout:
         orientation: 'vertical'
-        padding: [20, 20, 20, 20]
-        spacing: 20
+        padding: [SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING]
+        spacing: SECTION_SPACING
         
         # Header
         BoxLayout:
             size_hint_y: 0.15
             Label:
-                text: "Neues Spiel neues Glück!"
+                text: "Neue Runde neues Glück!"
                 font_size: font_config.font_size_big
 
         # Explanation Label
@@ -90,22 +107,22 @@
         # Footer
         BoxLayout:
             size_hint_y: 0.15
-            Button:
-                text: "Spiel starten"
+            PrimaryButton:
+                text: "Runde starten"
                 font_size: font_config.font_size_medium
                 on_release: root.start_game(self)
 
 <ScoreboardScreen>:
     BoxLayout:
         orientation: 'vertical'
-        padding: [20, 20, 20, 20]
-        spacing: 20
+        padding: [SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING]
+        spacing: SECTION_SPACING
         
         # Header
         BoxLayout:
             size_hint_y: 0.15
             Label:
-                text: f"Punktestand Runde {root.current_round_number}"
+                text: f"Punktestand nach Spiel {root.current_round_number - 1}"
                 font_size: font_config.font_size_big
 
         # Body
@@ -115,29 +132,32 @@
             GridLayout:
                 id: scoreboard
                 cols: 3
-                spacing: 0
+                spacing: WIDGET_SPACING
                 row_default_height: self.parent.height * 0.15
 
         # Footer
         BoxLayout:
             size_hint_y: 0.15
-            Button:
+            PrimaryButton:
+                id: points_button
                 text: "Punkte eingeben"
                 font_size: font_config.font_size_medium
-                on_release: root.go_to_add_points(self)
+                on_release: 
+                    root.manager.transition.direction = 'left'
+                    root.go_to_add_points(self)
 
 <AddPointsScreen>:
     BoxLayout:
         orientation: 'vertical'
-        padding: [20, 20, 20, 20]
-        spacing: 20
+        padding: [SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING]
+        spacing: SECTION_SPACING
         
         # Header
         BoxLayout:
             size_hint_y: 0.15
             orientation: 'vertical'
             Label:
-                text: f"Eingabe für Runde {root.current_round_number}"
+                text: f"Eingabe für Spiel {root.current_round_number}"
                 font_size: font_config.font_size_big
 
         # Table Header
@@ -148,13 +168,13 @@
                 text: "Spieler"
                 font_size: font_config.font_size_medium
             Label:
+                text: "Gewinner"
+                font_size: font_config.font_size_medium
+            Label:
                 text: "Punkte"
                 font_size: font_config.font_size_medium
             Label:
                 text: "# Verdopplungen"
-                font_size: font_config.font_size_medium
-            Label:
-                text: "Gewinner"
                 font_size: font_config.font_size_medium
 
         # Body
@@ -168,8 +188,16 @@
             id: buttons_layout
             size_hint_y: 0.15
             orientation: 'horizontal'
-            spacing: 10
-            Button:
+            spacing: WIDGET_SPACING
+            SecondaryButton:
+                id: back_button
+                text: "Zurück"
+                font_size: font_config.font_size_medium
+                disabled: root.first_time
+                on_release:
+                    root.manager.transition.direction = 'right'
+                    root.manager.current = 'scoreboard'
+            PrimaryButton:
                 text: "Punkte berechnen"
                 font_size: font_config.font_size_medium
                 on_release: root.submit_points()
@@ -177,14 +205,14 @@
 <RoundSummaryScreen>:
     BoxLayout:
         orientation: 'vertical'
-        padding: [20, 20, 20, 20]
-        spacing: 20
+        padding: [SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING]
+        spacing: SECTION_SPACING
         
         # Header
         BoxLayout:
             size_hint_y: 0.15
             Label:
-                text: f"Punkteberechnung"
+                text: f"Übersicht Spiel {root.current_round_number - 1}"
                 font_size: font_config.font_size_big
 
         # Table Header
@@ -195,7 +223,7 @@
                 text: "Spieler"
                 font_size: font_config.font_size_medium
             Label:
-                text: "Rundenpunkte"
+                text: "Spielpunkte"
                 font_size: font_config.font_size_medium
             Label:
                 text: "Punkteänderung"
@@ -210,7 +238,8 @@
         # Footer
         BoxLayout:
             size_hint_y: 0.15
-            Button:
+            PrimaryButton:
+                id: confirm_button
                 text: "Punkte anwenden"
                 font_size: font_config.font_size_medium
                 on_release: root.confirm_points()
@@ -218,8 +247,8 @@
 <GameOverScreen>:
     BoxLayout:
         orientation: 'vertical'
-        padding: [20, 20, 20, 20]
-        spacing: 20
+        padding: [SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING]
+        spacing: SECTION_SPACING
         
         # Header
         BoxLayout:
@@ -236,22 +265,22 @@
             GridLayout:
                 id: scoreboard
                 cols: 3
-                spacing: 0
+                spacing: WIDGET_SPACING
                 row_default_height: self.parent.height * 0.15
 
         # Footer
         BoxLayout:
             size_hint_y: 0.15
-            Button:
-                text: "Spielauswertung"
+            PrimaryButton:
+                text: "Rundenauswertung"
                 font_size: font_config.font_size_medium
                 on_release: root.proceed_to_save_game()
 
 <SaveGameScreen>:
     BoxLayout:
         orientation: 'vertical'
-        padding: [20, 20, 20, 20]
-        spacing: 20
+        padding: [SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING]
+        spacing: SECTION_SPACING
 
         # Body
         BoxLayout:
@@ -261,18 +290,20 @@
 
         # Footer
         BoxLayout:
-            size_hint_y: 0.2
-            Button:
+            size_hint_y: 0.15
+            PrimaryButton:
                 id: save_button
-                text: 'Spiel speichern'
+                text: 'Runde speichern'
                 font_size: font_config.font_size_medium
+                size_hint_y: None
+                height: self.parent.height * 0.8
                 on_release: root.save_game()
 
 <FinalScreen>:
     BoxLayout:
         orientation: 'vertical'
-        padding: [20, 20, 20, 20]
-        spacing: 20
+        padding: [SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING]
+        spacing: SECTION_SPACING
         
         # Body
         BoxLayout:
@@ -282,16 +313,20 @@
         
         # Footer with action buttons
         BoxLayout:
-            size_hint_y: 0.25
+            size_hint_y: 0.15
             orientation: 'horizontal'
-            spacing: 20
+            spacing: WIDGET_SPACING
             
-            Button:
-                text: "Öffne Spielordner"
+            SecondaryButton:
+                text: "Öffne Rundenordner"
                 font_size: font_config.font_size_medium
+                size_hint_y: None
+                height: self.parent.height * 0.8
                 on_release: root.open_game_folder()
             
-            Button:
-                text: "Neues Spiel"
+            PrimaryButton:
+                text: "Neue Runde"
                 font_size: font_config.font_size_medium
+                size_hint_y: None
+                height: self.parent.height * 0.8
                 on_release: root.start_new_game()

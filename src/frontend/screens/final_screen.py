@@ -4,7 +4,7 @@ from kivy.uix.button import Button
 import pandas as pd
 from kivy.uix.boxlayout import BoxLayout
 from kivy.properties import ObjectProperty
-from frontend.screens.config import font_config
+from frontend.shared.styles import font_config
 import subprocess
 import os
 
@@ -25,7 +25,7 @@ class FinalScreen(Screen):
         
         if self.game_data is None or len(self.game_data) == 0:
             self.ids.final_container.add_widget(Label(
-                text="Keine Spielstatistiken verfügbar",
+                text="Keine Statistiken verfügbar",
                 font_size=font_config.font_size_medium
             ))
             return
@@ -59,7 +59,7 @@ class FinalScreen(Screen):
         
         # Add wins distribution
         wins = self.game_data.drop_duplicates('round')['winner'].value_counts()
-        wins_text = "\n\nGewonnene Runden:\n"
+        wins_text = "\n\nGewonnene Spiele:\n"
         for wind, count in wins.items():
             wins_text += f"{wind}: {int(count)}\n"
         
@@ -75,14 +75,14 @@ class FinalScreen(Screen):
         """Open the game folder in the system file explorer"""
         if self.game and self.game.game_folder:
             folder_path = self.game.game_folder
-            if os.path.exists(folder_path):
+            if folder_path.exists():
                 if os.name == 'nt':  # Windows
-                    subprocess.Popen(['explorer', folder_path])
+                    subprocess.Popen(['explorer', str(folder_path)])
                 elif os.name == 'posix':  # macOS and Linux
                     if os.uname().sysname == 'Darwin':  # macOS
-                        subprocess.Popen(['open', folder_path])
+                        subprocess.Popen(['open', str(folder_path)])
                     else:  # Linux
-                        subprocess.Popen(['xdg-open', folder_path])
+                        subprocess.Popen(['xdg-open', str(folder_path)])
     
     def start_new_game(self):
         """Reset the game and navigate to welcome screen"""

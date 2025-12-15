@@ -1,6 +1,7 @@
 from logging import getLogger
 import pandas as pd
 import os
+from pathlib import Path
 
 
 def create_metadata_dataframe(game) -> pd.DataFrame:
@@ -90,14 +91,15 @@ def prepare_dataframes_for_saving(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Da
     return df_rounds_german, df_standings_german
 
 
-def save_dataframes_to_excel(df_rounds: pd.DataFrame, df_standings: pd.DataFrame, filename: str, folder_path: str = None, game=None) -> str:
+def save_dataframes_to_excel(df_rounds: pd.DataFrame, df_standings: pd.DataFrame, filename: str, folder_path: str | Path = None, game=None) -> str:
     filename = filename + ".xlsx"
     
     # Use folder_path if provided, otherwise save in current directory
     if folder_path:
-        full_path = os.path.join(folder_path, filename)
+        folder_path = Path(folder_path) if isinstance(folder_path, str) else folder_path
+        full_path = folder_path / filename
     else:
-        full_path = filename
+        full_path = Path(filename)
     
     with pd.ExcelWriter(full_path, engine='openpyxl') as writer:
         # Add metadata sheet first if game object is provided
@@ -126,5 +128,5 @@ def save_dataframes_to_excel(df_rounds: pd.DataFrame, df_standings: pd.DataFrame
     logger = getLogger(__name__)
     logger.info(f"Game results saved to {full_path}")
     
-    return full_path
+    return str(full_path)
 

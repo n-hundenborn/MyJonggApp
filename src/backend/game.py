@@ -4,6 +4,7 @@ from dataclasses import dataclass, field
 from backend.helper_functions import setup_logger
 import pandas as pd
 from datetime import datetime, timezone
+from pathlib import Path
 
 # Configure logger
 logger = setup_logger(__name__)
@@ -153,7 +154,7 @@ class Game:
     players: list[Player] = field(default_factory=list)
     round_wind: Wind = Wind.EAST
     game_data: pd.DataFrame = None
-    game_folder: str = None
+    game_folder: Path = None
     start_time: datetime = None
     end_time: datetime = None
     
@@ -173,13 +174,23 @@ class Game:
         """
         self.players = [Player(name, wind) for name, wind in zip(player_names, Wind)]
 
-    def set_game_folder(self, folder_path: str) -> None:
+    def set_game_folder(self, folder_path: str | Path) -> None:
         """Set the folder path where the game file will be saved.
         
         Args:
             folder_path: Path to the folder where the game file should be saved.
         """
-        self.game_folder = folder_path
+        self.game_folder = Path(folder_path) if isinstance(folder_path, str) else folder_path
+
+    def start_game(self) -> None:
+        """Capture the start time of the game with local timezone."""
+        self.start_time = datetime.now(tz=timezone.utc).astimezone()
+        logger.info(f"Game started at {self.start_time.isoformat()}")
+
+    def end_game(self) -> None:
+        """Capture the end time of the game with local timezone."""
+        self.end_time = datetime.now(tz=timezone.utc).astimezone()
+        logger.info(f"Game ended at {self.end_time.isoformat()}")
 
     def start_game(self) -> None:
         """Capture the start time of the game with local timezone."""
@@ -199,7 +210,7 @@ class Game:
     def process_points_input(self, points_dict: dict[Wind, tuple[int, int]], 
                            winner: Wind) -> None:
         logger.debug(f"Processing points input: {points_dict} with winner: {winner}")
-        input_logger.debug(f"Round {self.current_round_number} with winner: {winner}")
+        input_logger.debug(f"Game {self.current_round_number} with winner: {winner}")
         scores = []
         for wind, (points, times_doubled) in points_dict.items():
             player = self._get_player_by_wind(wind)
