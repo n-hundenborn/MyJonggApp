@@ -21,7 +21,7 @@ def get_dataframes_from_file(file_path: Path) -> tuple[pd.DataFrame, pd.DataFram
         df_games = pd.read_excel(file_path, sheet_name=1, engine='openpyxl')
         df_standings = pd.read_excel(file_path, sheet_name=2, engine='openpyxl')
     except Exception as e:
-        logger.error(f"Error loading {filename}: {e}")
+        logger.warning(f"Error loading {filename} - skipping file. Error: {e}")
         return None
     
     return prepare_round_data(filename, df_metadata, df_games, df_standings)
