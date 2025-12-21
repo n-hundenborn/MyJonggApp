@@ -49,7 +49,7 @@
                 valign: 'middle'
                 text_size: self.size
                 shorten: True
-                shorten_from: 'right'
+                shorten_from: 'center'
                 padding: [WIDGET_SPACING, 0]
                 markup: True
 
@@ -77,7 +77,100 @@
                 text: "Weiter"
                 font_size: font_config.font_size_medium
                 disabled: not root.can_proceed
-                on_release: root.proceed_to_start_screen()
+                on_release: root.proceed_to_next_screen()
+
+<GameModeScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING]
+        spacing: SECTION_SPACING
+        
+        # Header
+        BoxLayout:
+            size_hint_y: 0.25
+            Label:
+                text: "Was möchten Sie tun?"
+                font_size: font_config.font_size_big
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+
+        # Spacer
+        Widget:
+            size_hint_y: 0.1
+
+        # Buttons
+        BoxLayout:
+            size_hint_y: 0.65
+            orientation: 'vertical'
+            spacing: WIDGET_SPACING
+            
+            PrimaryButton:
+                text: "Neues Spiel"
+                font_size: font_config.font_size_medium
+                on_release: root.start_new_game()
+            
+            SecondaryButton:
+                text: "Spielauswertung erstellen"
+                font_size: font_config.font_size_medium
+                on_release: root.create_evaluation()
+
+<EvaluationScreen>:
+    BoxLayout:
+        orientation: 'vertical'
+        padding: [SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING]
+        spacing: SECTION_SPACING
+        
+        # Header
+        BoxLayout:
+            size_hint_y: 0.15
+            Label:
+                text: "Spielauswertung erstellen"
+                font_size: font_config.font_size_big
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+
+        # Spacer
+        Widget:
+            size_hint_y: 0.1
+
+        # Body - Button and folder info
+        BoxLayout:
+            size_hint_y: 0.60
+            orientation: 'vertical'
+            spacing: WIDGET_SPACING
+            
+            PrimaryButton:
+                text: "Auswertung für Spielordner"
+                font_size: font_config.font_size_medium
+                size_hint_y: 0.2
+                on_release: root.create_evaluation()
+            
+            # Folder info display
+            BoxLayout:
+                size_hint_y: 0.15
+                Label:
+                    text: root.folder_info
+                    font_size: font_config.font_size_medium
+                    halign: 'center'
+                    valign: 'top'
+                    text_size: self.size
+                    shorten: True
+                    shorten_from: 'center'
+                    padding: [WIDGET_SPACING, WIDGET_SPACING]
+            
+            # Spacer for remaining space
+            Widget:
+                size_hint_y: 0.65
+
+        # Footer
+        BoxLayout:
+            size_hint_y: 0.15
+            SecondaryButton:
+                text: "Zurück"
+                font_size: font_config.font_size_medium
+                on_release: root.back_to_menu()
 
 <StartScreen>:
     BoxLayout:

@@ -26,18 +26,7 @@ class WelcomeScreen(Screen):
     def update_folder_info(self):
         """Update the folder info display."""
         if self.game and self.game.game_folder:
-            # Shorten the path if it's too long
-            path = str(self.game.game_folder)
-            if len(path) > 70:  # Adjust this number based on your needs
-                # Keep the first part and last part, with ... in between
-                parts = self.game.game_folder.parts
-                if len(parts) > 4:
-                    shortened = str(self.game.game_folder.parts[0]) + os.sep + '...' + os.sep + os.sep.join(parts[-2:])
-                else:
-                    shortened = path
-            else:
-                shortened = path
-            self.folder_info = f"Rundenordner:\n{shortened}"
+            self.folder_info = f"Ordner:\n{str(self.game.game_folder)}"
             self.can_proceed = True
         else:
             self.folder_info = "Kein Ordner ausgewählt"
@@ -107,7 +96,7 @@ class WelcomeScreen(Screen):
             self.game.set_game_folder(folder_path)
         self.update_folder_info()
 
-    def proceed_to_start_screen(self):
+    def proceed_to_next_screen(self):
         """Proceed to start screen. Creates folder if it doesn't exist yet."""
         if not self.game or not self.game.game_folder:
             print("No folder selected")
@@ -118,7 +107,7 @@ class WelcomeScreen(Screen):
             os.makedirs(folder_path)
             print(f"Created folder: {folder_path}")
         
-        self.manager.current = 'start'
+        self.manager.current = 'game_mode'
 
     def update_fonts(self):
         """Update all font sizes when window is resized."""
