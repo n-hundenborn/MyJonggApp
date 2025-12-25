@@ -201,8 +201,16 @@ def _create_overview_figure(
         players, points = zip(*sorted_players)
         bar_colors = [PODIUM_COLORS[i] if i < len(PODIUM_COLORS) else '#A9A9A9' for i in range(len(players))]
         fig.add_trace(
-            go.Bar(x=list(players), y=list(points), name='Siegerpunkte',
-                   marker_color=bar_colors, showlegend=False),
+            go.Bar(
+                x=list(players), 
+                y=list(points), 
+                name='Siegerpunkte',
+                marker_color=bar_colors, 
+                text=list(points),
+                textposition='outside',
+                textfont=dict(size=17, color='black'),
+                showlegend=False
+            ),
             row=1, col=1
         )
 
@@ -210,9 +218,18 @@ def _create_overview_figure(
     total_points = df_points.groupby('spieler')['punkte_delta'].sum().sort_values(ascending=False)
 
     bar_colors = [PODIUM_COLORS[i] if i < len(PODIUM_COLORS) else '#A9A9A9' for i in range(len(total_points))]
+    formatted_points = [f"{int(val):,}".replace(",", ".") for val in total_points.values]
     fig.add_trace(
-        go.Bar(x=total_points.index, y=total_points.values, name='Gesamtpunktzahl',
-               marker_color=bar_colors, showlegend=False),
+        go.Bar(
+            x=total_points.index, 
+            y=total_points.values, 
+            name='Gesamtpunktzahl',
+            marker_color=bar_colors, 
+            text=formatted_points,
+            textposition='outside',
+            textfont=dict(size=14, color='black'),
+            showlegend=False
+        ),
         row=1, col=2
     )
 
@@ -302,10 +319,12 @@ def _create_overview_figure(
     
     # Calculate win rates for each wind
     wind_win_rates = []
+    wind_win_counts = []
     for wind in wind_order:
         wins = wind_wins.get(wind, 0)
         rate = (wins / total_rounds * 100) if total_rounds > 0 else 0
         wind_win_rates.append(rate)
+        wind_win_counts.append(wins)
     
     # Create bar chart with expected 25% line
     fig.add_trace(
@@ -314,6 +333,10 @@ def _create_overview_figure(
             y=wind_win_rates,
             name='Gewinnrate',
             marker_color=['#ff9999', '#ffcc99', '#99ccff', '#99ff99'],
+            text=wind_win_counts,
+            textposition='inside',
+            insidetextanchor='start',
+            textfont=dict(size=17, color='black'),
             showlegend=False
         ),
         row=3, col=2
@@ -324,8 +347,6 @@ def _create_overview_figure(
         y=25,
         line_dash="dash",
         line_color="red",
-        annotation_text="Erwartung (25%)",
-        annotation_position="right",
         row=3, col=2
     )
     
@@ -343,9 +364,8 @@ def _create_overview_figure(
     total_traces = len(fig.data)
     
     # Build visibility arrays for toggle buttons
-    # All traces before boxplots stay visible, plus wind analysis trace
-    wind_analysis_idx = boxplot_start_idx
-    base_visibility = [True] * (wind_analysis_idx + 1)
+    # All traces before boxplots stay visible (podium bars + timeline)
+    base_visibility = [True] * boxplot_start_idx
     
     # For netto: show first set of boxplots (netto), hide second set (delta)
     netto_boxplot_visibility = []
@@ -357,8 +377,11 @@ def _create_overview_figure(
     for i in range(num_players):
         delta_boxplot_visibility.extend([False, True])
     
-    netto_visible = base_visibility + netto_boxplot_visibility
-    delta_visible = base_visibility + delta_boxplot_visibility
+    # Wind analysis trace at the end should always be visible
+    wind_visibility = [True]
+    
+    netto_visible = base_visibility + netto_boxplot_visibility + wind_visibility
+    delta_visible = base_visibility + delta_boxplot_visibility + wind_visibility
     
     fig.update_layout(
         height=1200,
@@ -369,10 +392,10 @@ def _create_overview_figure(
         barmode='stack',
         legend=dict(
             orientation='h',
-            yanchor='bottom',
-            y=-0.15,
-            xanchor='center',
-            x=0.5
+            yanchor='top',
+            y=0.70,
+            xanchor='left',
+            x=0.0
         ),
         updatemenus=[
             dict(
@@ -410,19 +433,52 @@ def _create_overview_figure(
     )
 
     # Update axes
-    fig.update_xaxes(title_text="Spieler", row=1, col=1)
-    fig.update_yaxes(title_text="Siegerpunkte", row=1, col=1, dtick=1)
+    # Add extra space at top for Siegerpunkte labels
+    max_siegerpunkte = max(points) if sorted_players else 0
+    fig.update_xaxes(
+        row=1, col=1,
+        tickfont=dict(size=14)
+    )
+    fig.update_yaxes(
+        title_text="Siegerpunkte", 
+        row=1, col=1, 
+        range=[0, max_siegerpunkte * 1.15]
+    )
 
-    fig.update_xaxes(title_text="Spieler", row=1, col=2)
-    fig.update_yaxes(title_text="Gesamtpunktzahl", row=1, col=2)
+    max_gesamtpunktzahl = total_points.max() if len(total_points) > 0 else 0
+    min_gesamtpunktzahl = total_points.min() if len(total_points) > 0 else 0
+    y_range_buffer = abs(max_gesamtpunktzahl - min_gesamtpunktzahl) * 0.15
+    fig.update_xaxes(
+        row=1, col=2,
+        tickfont=dict(size=14)
+    )
+    fig.update_yaxes(
+        title_text="Gesamtpunktzahl", 
+        row=1, col=2,
+        range=[min_gesamtpunktzahl - y_range_buffer, max_gesamtpunktzahl + y_range_buffer]
+    )
 
     # X-axis for cumulative timeline: show all games if <= 25, otherwise every 2nd
     max_games = df_points_sorted['continuous_game_index'].max() if not df_points_sorted.empty else 0
     game_tick_interval = 1 if max_games <= 25 else 2
-    fig.update_xaxes(title_text="Spielnummer (alle Runden)", row=2, col=1, dtick=game_tick_interval)
+    fig.update_xaxes(
+        title_text="Spielnummer (alle Runden)", 
+        row=2, col=1, 
+        dtick=game_tick_interval,
+        tick0=1,
+        range=[0.5, max_games + 1.5]
+    )
     fig.update_yaxes(title_text="Gesamtpunktzahl", row=2, col=1)
 
-    fig.update_xaxes(title_text="Spieler", row=3, col=1)
+    fig.update_xaxes(
+        row=3, col=1,
+        tickfont=dict(size=14)
+    )
     fig.update_yaxes(title_text="Nettopunkte (inkl. Verdopplungen)", row=3, col=1)
+    
+    fig.update_xaxes(
+        row=3, col=2,
+        tickfont=dict(size=14)
+    )
 
     return fig
