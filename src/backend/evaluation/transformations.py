@@ -12,46 +12,46 @@ def prepare_round_data(
     - df_rounds: Round-level metadata
     - df_games_meta: Game-level metadata
     - df_points: Player-level point distribution
-    
+
     Returns:
         tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]: (df_rounds, df_games_meta, df_points)
     """
     # Generate hash from filename
     file_hash = hashlib.md5(filename.encode()).hexdigest()[:8]
-    
+
     # 1. Create Runden-Metadaten (Round-level)
     df_meta.columns = ['rundenstart', 'rundenende', 'rundendauer', 'rundendauer_text']
     df_meta['runden_id'] = file_hash
     df_meta['dateiname'] = filename
-    
+
     # Extract player names and calculate siegerpunkte from standings
     df_standings.columns = ['spieler_wind', 'spieler', 'punktestand', 'rang']
     df_standings = calculate_winning_points(df_standings)
-    
+
     # Map wind positions to player names and siegerpunkte
     wind_mapping = {
         'Osten': 'osten',
-        'Süden': 'sueden', 
+        'Süden': 'sueden',
         'Westen': 'westen',
         'Norden': 'norden'
     }
-    
+
     for _, row in df_standings.iterrows():
         wind_key = wind_mapping.get(row['spieler_wind'])
         if wind_key:
             df_meta[f'spieler_{wind_key}'] = row['spieler']
             df_meta[f'siegerpunkte_{wind_key}'] = row['siegerpunkte']
-    
+
     # Select only required columns for round metadata
     df_rounds = df_meta[[
-        'runden_id', 'dateiname', 'rundenstart', 'rundenende', 
+        'runden_id', 'dateiname', 'rundenstart', 'rundenende',
         'rundendauer', 'rundendauer_text',
         'spieler_osten', 'siegerpunkte_osten',
         'spieler_sueden', 'siegerpunkte_sueden',
         'spieler_westen', 'siegerpunkte_westen',
         'spieler_norden', 'siegerpunkte_norden'
     ]].copy()
-    
+
     # 2. Create Spiel-Metadaten (Game-level)
     df_games.columns = [
         'spiel_index',
@@ -66,23 +66,23 @@ def prepare_round_data(
         'punktestand',
         'rang'
     ]
-    
+
     # Extract unique game metadata (one row per game)
     df_games_meta = df_games[[
         'spiel_index', 'wind_des_spiels', 'gewinner_wind'
     ]].drop_duplicates().copy()
     df_games_meta['runden_id'] = file_hash
-    
+
     # Add timestamps from metadata
     df_games_meta['spielstart'] = df_meta.at[0, 'rundenstart']
     df_games_meta['spielende'] = df_meta.at[0, 'rundenende']
-    
+
     # Reorder columns
     df_games_meta = df_games_meta[[
-        'runden_id', 'spiel_index', 'wind_des_spiels', 
+        'runden_id', 'spiel_index', 'wind_des_spiels',
         'gewinner_wind', 'spielstart', 'spielende'
     ]]
-    
+
     # 3. Create Spiel-Punkteverteilung (Player-level)
     df_points = df_games[[
         'spiel_index', 'spieler', 'spieler_wind',
@@ -90,7 +90,7 @@ def prepare_round_data(
         'punkte_delta', 'punktestand', 'rang'
     ]].copy()
     df_points['runden_id'] = file_hash
-    
+
     # Reorder columns
     df_points = df_points[[
         'runden_id', 'spiel_index', 'spieler', 'spieler_wind',
