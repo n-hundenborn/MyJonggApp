@@ -4,7 +4,6 @@ import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.express as px
 
-HTML_FILENAME = "evaluation_dashboard.html"
 PODIUM_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32', "#939393"]  # Gold, Silver, Bronze, 4th is Black
 PLAYER_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f']  # Neutral distinguishable colors for players
 
@@ -137,11 +136,13 @@ def create_html_dashboard(
     """
 
     # Save to file
-    html_file = output_path / HTML_FILENAME
-    with open(html_file, 'w', encoding='utf-8') as f:
+    # use parent foldername to create filename
+    html_file = 'Auswertung_' + output_path.parent.name + '.html'
+    filepath = output_path / html_file
+    with open(filepath, 'w', encoding='utf-8') as f:
         f.write(html_content)
 
-    return html_file
+    return filepath
 
 
 def _create_overview_figure(
