@@ -5,7 +5,7 @@ from plotly.subplots import make_subplots
 import plotly.express as px
 
 HTML_FILENAME = "evaluation_dashboard.html"
-PODIUM_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32', '#8B7D6B']  # Gold, Silver, Bronze, 4th
+PODIUM_COLORS = ['#FFD700', '#C0C0C0', '#CD7F32', "#939393"]  # Gold, Silver, Bronze, 4th is Black
 PLAYER_COLORS = ['#1f77b4', '#ff7f0e', '#2ca02c', '#d62728', '#9467bd', '#8c564b', '#e377c2', '#7f7f7f']  # Neutral distinguishable colors for players
 
 
@@ -165,13 +165,13 @@ def _create_overview_figure(
             'Podium - Siegerpunkte',
             'Podium - Gesamtpunktzahl',
             'Laufende Summe der Gesamtpunktzahl über alle Spiele',
-            'Ø Nettopunkte je Spieler',
-            ''
+            'Punkteverteilung je Spieler (Boxplot)',
+            'Wind-Vorteil Analyse'
         ),
         specs=[
             [{'type': 'bar'}, {'type': 'bar'}],
             [{'type': 'scatter', 'colspan': 2}, None],
-            [{'type': 'bar'}, None]
+            [{'type': 'bar'}, {'type': 'bar'}]
         ],
         vertical_spacing=0.12,
         horizontal_spacing=0.12,
@@ -234,10 +234,10 @@ def _create_overview_figure(
 
     for player in sorted(df_points_sorted['spieler'].unique()):
         player_data = df_points_sorted[df_points_sorted['spieler'] == player]
-        player_color = player_color_map.get(player, '#7f7f7f')  # Default gray if not found
+        player_color = player_color_map.get(player, '#7f7f7f')
         fig.add_trace(
             go.Scatter(
-                x=player_data['continuous_game_index'],
+                x=player_data['continuous_game_index'] + 1,
                 y=player_data['cumulative_points'],
                 mode='lines+markers',
                 name=player,
@@ -247,16 +247,119 @@ def _create_overview_figure(
             row=2, col=1
         )
 
-    # Average Points per Game
-    avg_points = df_points.groupby('spieler')['punkte_netto'].mean().sort_values(ascending=False)
-    bar_colors = [player_color_map.get(player, '#7f7f7f') for player in avg_points.index]
+    # Boxplot for Points Distribution
+    all_players = sorted(df_points['spieler'].unique())
+    num_players = len(all_players)
+    
+    # Track where boxplot traces start
+    boxplot_start_idx = len(fig.data)
+    
+    for player in all_players:
+        player_data = df_points[df_points['spieler'] == player]
+        player_color = player_color_map.get(player, '#7f7f7f')
+        
+        # Netto points boxplot
+        fig.add_trace(
+            go.Box(
+                y=player_data['punkte_netto'],
+                name=player,
+                marker_color=player_color,
+                visible=True,
+                showlegend=False
+            ),
+            row=3, col=1
+        )
+        
+        # Delta points boxplot
+        fig.add_trace(
+            go.Box(
+                y=player_data['punkte_delta'],
+                name=player,
+                marker_color=player_color,
+                visible=False,
+                showlegend=False
+            ),
+            row=3, col=1
+        )
+
+    # Wind Advantage Analysis
+    # Find round winners (rank 1 at final game of each round)
+    final_games = df_points.groupby('runden_id')['spiel_index'].max().reset_index()
+    final_games.columns = ['runden_id', 'final_spiel_index']
+    
+    round_winners = df_points.merge(final_games, on='runden_id')
+    round_winners = round_winners[
+        (round_winners['spiel_index'] == round_winners['final_spiel_index']) &
+        (round_winners['rang'] == 1)
+    ]
+    
+    # Count wins by wind position
+    wind_wins = round_winners['spieler_wind'].value_counts()
+    total_rounds = len(df_rounds)
+    
+    # Define fixed wind order (matching Wind enum in game.py)
+    wind_order = ['Osten', 'Süden', 'Westen', 'Norden']
+    
+    # Calculate win rates for each wind
+    wind_win_rates = []
+    for wind in wind_order:
+        wins = wind_wins.get(wind, 0)
+        rate = (wins / total_rounds * 100) if total_rounds > 0 else 0
+        wind_win_rates.append(rate)
+    
+    # Create bar chart with expected 25% line
     fig.add_trace(
-        go.Bar(x=avg_points.index, y=avg_points.values, name='Avg Points',
-               marker_color=bar_colors, showlegend=False),
-        row=3, col=1
+        go.Bar(
+            x=wind_order,
+            y=wind_win_rates,
+            name='Gewinnrate',
+            marker_color=['#ff9999', '#ffcc99', '#99ccff', '#99ff99'],
+            showlegend=False
+        ),
+        row=3, col=2
+    )
+    
+    # Add expected 25% reference line
+    fig.add_hline(
+        y=25,
+        line_dash="dash",
+        line_color="red",
+        annotation_text="Erwartung (25%)",
+        annotation_position="right",
+        row=3, col=2
+    )
+    
+    fig.update_yaxes(
+        title_text="Gewinnrate (%)",
+        row=3, col=2
+    )
+    
+    fig.update_xaxes(
+        title_text="Windposition",
+        row=3, col=2
     )
 
     # Update layout
+    total_traces = len(fig.data)
+    
+    # Build visibility arrays for toggle buttons
+    # All traces before boxplots stay visible, plus wind analysis trace
+    wind_analysis_idx = boxplot_start_idx
+    base_visibility = [True] * (wind_analysis_idx + 1)
+    
+    # For netto: show first set of boxplots (netto), hide second set (delta)
+    netto_boxplot_visibility = []
+    for i in range(num_players):
+        netto_boxplot_visibility.extend([True, False])
+    
+    # For delta: hide first set of boxplots (netto), show second set (delta)
+    delta_boxplot_visibility = []
+    for i in range(num_players):
+        delta_boxplot_visibility.extend([False, True])
+    
+    netto_visible = base_visibility + netto_boxplot_visibility
+    delta_visible = base_visibility + delta_boxplot_visibility
+    
     fig.update_layout(
         height=1200,
         title_text="Mahjong Dashboard - Übersicht aller Runden",
@@ -270,20 +373,56 @@ def _create_overview_figure(
             y=-0.15,
             xanchor='center',
             x=0.5
-        )
+        ),
+        updatemenus=[
+            dict(
+                type="buttons",
+                direction="left",
+                buttons=[
+                    dict(
+                        args=[
+                            {"visible": netto_visible},
+                            {"yaxis4.title.text": "Nettopunkte (inkl. Verdopplungen)"}
+                        ],
+                        label="Nettopunkte",
+                        method="update"
+                    ),
+                    dict(
+                        args=[
+                            {"visible": delta_visible},
+                            {"yaxis4.title.text": "Punkte Delta (mit Schulden)"}
+                        ],
+                        label="Punktedifferenz",
+                        method="update"
+                    )
+                ],
+                active=0,
+                showactive=True,
+                x=0.0,
+                xanchor="left",
+                y=-0.05,
+                yanchor="top",
+                bgcolor="lightgray",
+                bordercolor="gray",
+                borderwidth=1
+            )
+        ]
     )
 
     # Update axes
     fig.update_xaxes(title_text="Spieler", row=1, col=1)
-    fig.update_yaxes(title_text="Siegerpunkte", row=1, col=1)
+    fig.update_yaxes(title_text="Siegerpunkte", row=1, col=1, dtick=1)
 
     fig.update_xaxes(title_text="Spieler", row=1, col=2)
     fig.update_yaxes(title_text="Gesamtpunktzahl", row=1, col=2)
 
-    fig.update_xaxes(title_text="Spielnummer (alle Runden)", row=2, col=1)
+    # X-axis for cumulative timeline: show all games if <= 25, otherwise every 2nd
+    max_games = df_points_sorted['continuous_game_index'].max() if not df_points_sorted.empty else 0
+    game_tick_interval = 1 if max_games <= 25 else 2
+    fig.update_xaxes(title_text="Spielnummer (alle Runden)", row=2, col=1, dtick=game_tick_interval)
     fig.update_yaxes(title_text="Gesamtpunktzahl", row=2, col=1)
 
     fig.update_xaxes(title_text="Spieler", row=3, col=1)
-    fig.update_yaxes(title_text="Ø Punkte inkl. Verdopplungen", row=3, col=1)
+    fig.update_yaxes(title_text="Nettopunkte (inkl. Verdopplungen)", row=3, col=1)
 
     return fig
