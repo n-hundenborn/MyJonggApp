@@ -436,6 +436,10 @@ def _create_overview_figure(
     # Update axes
     # Add extra space at top for Siegerpunkte labels
     max_siegerpunkte = max(points) if sorted_players else 0
+    min_siegerpunkte = min(points) if sorted_players else 0
+    y_range_sieger = abs(max_siegerpunkte - min_siegerpunkte)
+    # Add 20% buffer at top for text labels
+    y_range_buffer_top_sieger = y_range_sieger * 0.20
     fig.update_xaxes(
         row=1, col=1,
         tickfont=dict(size=14)
@@ -443,12 +447,14 @@ def _create_overview_figure(
     fig.update_yaxes(
         title_text="Siegerpunkte", 
         row=1, col=1, 
-        range=[0, max_siegerpunkte * 1.15]
+        range=[min_siegerpunkte if min_siegerpunkte < 0 else 0, max_siegerpunkte + y_range_buffer_top_sieger]
     )
 
     max_gesamtpunktzahl = total_points.max() if len(total_points) > 0 else 0
     min_gesamtpunktzahl = total_points.min() if len(total_points) > 0 else 0
-    y_range_buffer = abs(max_gesamtpunktzahl - min_gesamtpunktzahl) * 0.15
+    y_range_total = abs(max_gesamtpunktzahl - min_gesamtpunktzahl)
+    y_range_buffer_top = y_range_total * 0.20
+    y_range_buffer_bottom = y_range_total * 0.15
     fig.update_xaxes(
         row=1, col=2,
         tickfont=dict(size=14)
@@ -456,7 +462,7 @@ def _create_overview_figure(
     fig.update_yaxes(
         title_text="Gesamtpunktzahl", 
         row=1, col=2,
-        range=[min_gesamtpunktzahl - y_range_buffer, max_gesamtpunktzahl + y_range_buffer]
+        range=[min_gesamtpunktzahl - y_range_buffer_bottom, max_gesamtpunktzahl + y_range_buffer_top]
     )
 
     # X-axis for cumulative timeline: show all games if <= 25, otherwise every 2nd
