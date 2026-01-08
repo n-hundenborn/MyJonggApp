@@ -77,6 +77,10 @@ class GameModeScreen(Screen):
         else:
             self.status_message = "Fehler: Kein Ordner ausgewählt"
 
+    def back_to_folder_selection(self):
+        """Navigate back to welcome screen to select another folder."""
+        self.manager.current = 'welcome'
+
     def update_fonts(self):
         """Update all font sizes when window is resized."""
         # This will be called by the main app when window is resized

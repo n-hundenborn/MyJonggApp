@@ -150,9 +150,15 @@
                 size_hint_y: 0.25
                 on_release: root.open_folder()
             
-            # Spacer
-            Widget:
+            SecondaryButton:
+                text: "Zurück"
+                font_size: font_config.font_size_medium
                 size_hint_y: 0.25
+                on_release: root.back_to_folder_selection()
+            
+            # Spacer (reduced to accommodate 4th button)
+            Widget:
+                size_hint_y: 0.0
 
 <StartScreen>:
     BoxLayout:
