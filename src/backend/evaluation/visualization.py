@@ -233,12 +233,23 @@ def _create_overview_figure(
             x=total_points.index, 
             y=total_points.values, 
             name='Gesamtpunktzahl',
-            marker_color=bar_colors, 
-            text=formatted_points,
-            textposition='inside',
-            insidetextanchor='start',
-            textfont=dict(size=14, color='black'),
+            marker_color=bar_colors,
             showlegend=False
+        ),
+        row=1, col=2
+    )
+    
+    # Add text labels at y=0
+    fig.add_trace(
+        go.Scatter(
+            x=total_points.index,
+            y=[0] * len(total_points),
+            mode='text',
+            text=formatted_points,
+            textposition='top center',
+            textfont=dict(size=14, color='black'),
+            showlegend=False,
+            hoverinfo='skip'
         ),
         row=1, col=2
     )
@@ -330,11 +341,23 @@ def _create_overview_figure(
             y=avg_points_per_player['avg_netto'],
             name='Ø Netto',
             marker_color=bar_colors_avg_player,
+            showlegend=False,
+            visible=True
+        ),
+        row=3, col=2
+    )
+    
+    # Add text labels at y=0 for netto
+    fig.add_trace(
+        go.Scatter(
+            x=avg_points_per_player['spieler'],
+            y=[0] * len(avg_points_per_player),
+            mode='text',
             text=formatted_avg_netto,
-            textposition='inside',
-            insidetextanchor='start',
+            textposition='top center',
             textfont=dict(size=14, color='black'),
             showlegend=False,
+            hoverinfo='skip',
             visible=True
         ),
         row=3, col=2
@@ -348,11 +371,23 @@ def _create_overview_figure(
             y=avg_points_per_player['avg_delta'],
             name='Ø Delta',
             marker_color=bar_colors_avg_player,
+            showlegend=False,
+            visible=False
+        ),
+        row=3, col=2
+    )
+    
+    # Add text labels at y=0 for delta
+    fig.add_trace(
+        go.Scatter(
+            x=avg_points_per_player['spieler'],
+            y=[0] * len(avg_points_per_player),
+            mode='text',
             text=formatted_avg_delta,
-            textposition='inside',
-            insidetextanchor='start',
+            textposition='top center',
             textfont=dict(size=14, color='black'),
             showlegend=False,
+            hoverinfo='skip',
             visible=False
         ),
         row=3, col=2
@@ -515,11 +550,23 @@ def _create_overview_figure(
             y=avg_points_as_wind['avg_netto'],
             name='Ø Netto als Wind',
             marker_color=bar_colors_avg,
+            showlegend=False,
+            visible=True
+        ),
+        row=4, col=2
+    )
+    
+    # Add text labels at y=0 for netto
+    fig.add_trace(
+        go.Scatter(
+            x=avg_points_as_wind['spieler'],
+            y=[0] * len(avg_points_as_wind),
+            mode='text',
             text=formatted_netto,
-            textposition='inside',
-            insidetextanchor='start',
+            textposition='top center',
             textfont=dict(size=14, color='black'),
             showlegend=False,
+            hoverinfo='skip',
             visible=True
         ),
         row=4, col=2
@@ -533,11 +580,23 @@ def _create_overview_figure(
             y=avg_points_as_wind['avg_delta'],
             name='Ø Delta als Wind',
             marker_color=bar_colors_avg,
+            showlegend=False,
+            visible=False
+        ),
+        row=4, col=2
+    )
+    
+    # Add text labels at y=0 for delta
+    fig.add_trace(
+        go.Scatter(
+            x=avg_points_as_wind['spieler'],
+            y=[0] * len(avg_points_as_wind),
+            mode='text',
             text=formatted_delta,
-            textposition='inside',
-            insidetextanchor='start',
+            textposition='top center',
             textfont=dict(size=14, color='black'),
             showlegend=False,
+            hoverinfo='skip',
             visible=False
         ),
         row=4, col=2
@@ -565,8 +624,9 @@ def _create_overview_figure(
     delta_padding = delta_range_size * 0.10 if delta_range_size > 0 else 100
     
     # Set initial y-axis ranges for both bar charts (netto by default)
-    shared_netto_range = [netto_min - netto_padding, netto_max + netto_padding]
-    shared_delta_range = [delta_min - delta_padding, delta_max + delta_padding]
+    # Ensure lower bound never exceeds 0
+    shared_netto_range = [min(0, netto_min - netto_padding), netto_max + netto_padding]
+    shared_delta_range = [min(0, delta_min - delta_padding), delta_max + delta_padding]
     
     fig.update_yaxes(title_text="Ø Nettopunkte", range=shared_netto_range, row=3, col=2)
     fig.update_yaxes(title_text="Ø Nettopunkte", range=shared_netto_range, row=4, col=2)
@@ -588,9 +648,10 @@ def _create_overview_figure(
     for i in range(num_players):
         delta_boxplot_visibility.extend([False, True])
     
-    # Average points per player bar charts: netto visible, delta hidden
-    avg_player_bar_netto_visibility = [True, False]
-    avg_player_bar_delta_visibility = [False, True]
+    # Average points per player bar charts + text labels: netto visible, delta hidden
+    # Each has: bar + scatter text = 2 traces
+    avg_player_bar_netto_visibility = [True, True, False, False]  # netto bar + text visible, delta bar + text hidden
+    avg_player_bar_delta_visibility = [False, False, True, True]  # netto bar + text hidden, delta bar + text visible
     
     # Wind analysis trace should always be visible
     wind_visibility = [True]
@@ -605,9 +666,10 @@ def _create_overview_figure(
     for i in range(num_players_wind):
         wind_perf_delta_visibility.extend([False, True])
     
-    # Average points as wind bar charts: netto visible, delta hidden
-    avg_wind_bar_netto_visibility = [True, False]
-    avg_wind_bar_delta_visibility = [False, True]
+    # Average points as wind bar charts + text labels: netto visible, delta hidden
+    # Each has: bar + scatter text = 2 traces
+    avg_wind_bar_netto_visibility = [True, True, False, False]  # netto bar + text visible, delta bar + text hidden
+    avg_wind_bar_delta_visibility = [False, False, True, True]  # netto bar + text hidden, delta bar + text visible
     
     netto_visible = base_visibility + netto_boxplot_visibility + avg_player_bar_netto_visibility + wind_visibility + wind_perf_netto_visibility + avg_wind_bar_netto_visibility
     delta_visible = base_visibility + delta_boxplot_visibility + avg_player_bar_delta_visibility + wind_visibility + wind_perf_delta_visibility + avg_wind_bar_delta_visibility
