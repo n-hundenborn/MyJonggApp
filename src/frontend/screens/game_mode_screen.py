@@ -4,6 +4,7 @@ from kivy.properties import ObjectProperty, StringProperty, BooleanProperty
 from kivy.clock import Clock
 from backend.game import Game
 from backend.evaluation.orchestrator import start_evaluation
+from frontend.components.popups import show_loading_results
 
 
 class GameModeScreen(Screen):
@@ -53,10 +54,12 @@ class GameModeScreen(Screen):
     def _run_evaluation(self):
         """Perform the actual evaluation work."""
         try:
-            evaluation_filename = start_evaluation(self.game.game_folder)
+            evaluation_filename, loading_info = start_evaluation(self.game.game_folder)
             
             if evaluation_filename:
                 self.status_message = f"Dashboard erfolgreich erstellt"
+                # Show loading results popup
+                show_loading_results(loading_info)
                 # Open the file with the default system application
                 os.startfile(evaluation_filename)
             else:
