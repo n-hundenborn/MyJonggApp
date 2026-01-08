@@ -158,25 +158,32 @@ def _create_overview_figure(
     2. Podium - Gesamtpunktzahl
     3. Laufende Summe der Gesamtpunktzahl über alle Spiele
     4. Ø Nettopunkte je Spieler
+    5. Wind-Vorteil Analyse
+    6. Performance als Wind des Spiels
     """
     # Create subplot grid
     fig = make_subplots(
-        rows=3, cols=2,
+        rows=5, cols=2,
         subplot_titles=(
             'Podium - Siegerpunkte',
             'Podium - Gesamtpunktzahl',
             'Laufende Summe der Gesamtpunktzahl über alle Spiele',
             'Punkteverteilung je Spieler (Boxplot)',
+            'Ø Punkte',
+            'Spielführer Analyse',
+            'Ø Punkte als Spielführer',
             'Wind-Vorteil Analyse'
         ),
         specs=[
             [{'type': 'bar'}, {'type': 'bar'}],
             [{'type': 'scatter', 'colspan': 2}, None],
-            [{'type': 'bar'}, {'type': 'bar'}]
+            [{'type': 'box'}, {'type': 'bar'}],
+            [{'type': 'box'}, {'type': 'bar'}],
+            [{'type': 'bar', 'colspan': 2}, None]
         ],
-        vertical_spacing=0.12,
+        vertical_spacing=0.08,
         horizontal_spacing=0.12,
-        row_heights=[0.3, 0.4, 0.3]
+        row_heights=[0.20, 0.30, 0.18, 0.18, 0.14]
     )
 
     # Siegerpunkte by Player
@@ -208,7 +215,8 @@ def _create_overview_figure(
                 name='Siegerpunkte',
                 marker_color=bar_colors, 
                 text=list(points),
-                textposition='outside',
+                textposition='inside',
+                insidetextanchor='start',
                 textfont=dict(size=17, color='black'),
                 showlegend=False
             ),
@@ -227,7 +235,8 @@ def _create_overview_figure(
             name='Gesamtpunktzahl',
             marker_color=bar_colors, 
             text=formatted_points,
-            textposition='outside',
+            textposition='inside',
+            insidetextanchor='start',
             textfont=dict(size=14, color='black'),
             showlegend=False
         ),
@@ -266,7 +275,8 @@ def _create_overview_figure(
         )
 
     # Boxplot for Points Distribution
-    all_players = sorted(df_points['spieler'].unique())
+    # Use consistent player order from Siegerpunkte ranking
+    all_players = [player for player, _ in sorted_players] if sorted_players else sorted(df_points['spieler'].unique())
     num_players = len(all_players)
     
     # Track where boxplot traces start
@@ -300,7 +310,65 @@ def _create_overview_figure(
             row=3, col=1
         )
 
-    # Wind Advantage Analysis
+    # Average points bar chart per player (row 3, col 2)
+    avg_netto_per_player = df_points.groupby('spieler')['punkte_netto'].mean().reset_index(name='avg_netto')
+    avg_delta_per_player = df_points.groupby('spieler')['punkte_delta'].mean().reset_index(name='avg_delta')
+    avg_points_per_player = avg_netto_per_player.merge(avg_delta_per_player, on='spieler')
+    
+    # Use consistent player order from Siegerpunkte ranking
+    player_order = [player for player, _ in sorted_players] if sorted_players else sorted(avg_points_per_player['spieler'].unique())
+    avg_points_per_player['spieler'] = pd.Categorical(avg_points_per_player['spieler'], categories=player_order, ordered=True)
+    avg_points_per_player = avg_points_per_player.sort_values('spieler')
+    
+    bar_colors_avg_player = [player_color_map.get(player, '#7f7f7f') for player in avg_points_per_player['spieler']]
+    
+    # Netto average bar chart (visible by default)
+    formatted_avg_netto = [f"{int(val):,}".replace(",", ".") for val in avg_points_per_player['avg_netto']]
+    fig.add_trace(
+        go.Bar(
+            x=avg_points_per_player['spieler'],
+            y=avg_points_per_player['avg_netto'],
+            name='Ø Netto',
+            marker_color=bar_colors_avg_player,
+            text=formatted_avg_netto,
+            textposition='inside',
+            insidetextanchor='start',
+            textfont=dict(size=14, color='black'),
+            showlegend=False,
+            visible=True
+        ),
+        row=3, col=2
+    )
+    
+    # Delta average bar chart (hidden by default)
+    formatted_avg_delta = [f"{int(val):,}".replace(",", ".") for val in avg_points_per_player['avg_delta']]
+    fig.add_trace(
+        go.Bar(
+            x=avg_points_per_player['spieler'],
+            y=avg_points_per_player['avg_delta'],
+            name='Ø Delta',
+            marker_color=bar_colors_avg_player,
+            text=formatted_avg_delta,
+            textposition='inside',
+            insidetextanchor='start',
+            textfont=dict(size=14, color='black'),
+            showlegend=False,
+            visible=False
+        ),
+        row=3, col=2
+    )
+    
+    fig.update_xaxes(
+        row=3, col=2,
+        tickfont=dict(size=14)
+    )
+    
+    # Calculate shared y-axis range for both average bar charts (row 3 col 2 and row 4 col 2)
+    # For netto values
+    all_netto_values = list(avg_points_per_player['avg_netto'])
+    all_delta_values = list(avg_points_per_player['avg_delta'])
+
+    # Wind Advantage Analysis (moved to row 5)
     # Find round winners (rank 1 at final game of each round)
     final_games = df_points.groupby('runden_id')['spiel_index'].max().reset_index()
     final_games.columns = ['runden_id', 'final_spiel_index']
@@ -340,7 +408,7 @@ def _create_overview_figure(
             textfont=dict(size=17, color='black'),
             showlegend=False
         ),
-        row=3, col=2
+        row=5, col=1
     )
     
     # Add expected 25% reference line
@@ -348,18 +416,160 @@ def _create_overview_figure(
         y=25,
         line_dash="dash",
         line_color="red",
-        row=3, col=2
+        row=5, col=1
     )
     
     fig.update_yaxes(
         title_text="Gewinnrate (%)",
-        row=3, col=2
+        row=5, col=1
     )
     
     fig.update_xaxes(
         title_text="Windposition",
-        row=3, col=2
+        row=5, col=1
     )
+
+    # Wind Performance Analysis (as wind_des_spiels)
+    # Merge df_points with df_games to get wind_des_spiels
+    df_wind_analysis = df_points.merge(
+        df_games[['runden_id', 'spiel_index', 'wind_des_spiels', 'gewinner_wind']],
+        on=['runden_id', 'spiel_index'],
+        how='left'
+    )
+    
+    # Filter for games where player was the wind of the game
+    df_as_wind = df_wind_analysis[df_wind_analysis['spieler_wind'] == df_wind_analysis['wind_des_spiels']]
+    
+    # Calculate per-round statistics for each player
+    # 1. Total netto points as wind_des_spiels per round
+    df_netto_as_wind = df_as_wind.groupby(
+        ['runden_id', 'spieler']
+    )['punkte_netto'].sum().reset_index(name='netto_as_wind')
+    
+    # 2. Total delta points as wind_des_spiels per round
+    df_delta_as_wind = df_as_wind.groupby(
+        ['runden_id', 'spieler']
+    )['punkte_delta'].sum().reset_index(name='delta_as_wind')
+    
+    # Merge both statistics
+    df_wind_stats = df_netto_as_wind.merge(
+        df_delta_as_wind,
+        on=['runden_id', 'spieler'],
+        how='outer'
+    ).fillna(0)
+    
+    # Create boxplots for each player (netto and delta, togglable with main boxplot)
+    # Use consistent player order from Siegerpunkte ranking
+    all_players_sorted = [player for player, _ in sorted_players] if sorted_players else sorted(df_points['spieler'].unique())
+    num_players_wind = len(all_players_sorted)
+    
+    for player in all_players_sorted:
+        player_stats = df_wind_stats[df_wind_stats['spieler'] == player]
+        player_color = player_color_map.get(player, '#7f7f7f')
+        
+        # Netto points boxplot (visible by default)
+        fig.add_trace(
+            go.Box(
+                y=player_stats['netto_as_wind'],
+                name=player,
+                marker_color=player_color,
+                visible=True,
+                showlegend=False
+            ),
+            row=4, col=1
+        )
+        
+        # Delta points boxplot (hidden by default)
+        fig.add_trace(
+            go.Box(
+                y=player_stats['delta_as_wind'],
+                name=player,
+                marker_color=player_color,
+                visible=False,
+                showlegend=False
+            ),
+            row=4, col=1
+        )
+    
+    fig.update_yaxes(title_text="Nettopunkte als Wind des Spiels", row=4, col=1)
+
+    # Bar charts: Average points as wind_des_spiels
+    # Calculate average netto and delta points for each player
+    avg_netto_as_wind = df_as_wind.groupby('spieler')['punkte_netto'].mean().reset_index(name='avg_netto')
+    avg_delta_as_wind = df_as_wind.groupby('spieler')['punkte_delta'].mean().reset_index(name='avg_delta')
+    
+    # Merge and use consistent player order from Siegerpunkte ranking
+    avg_points_as_wind = avg_netto_as_wind.merge(avg_delta_as_wind, on='spieler')
+    player_order = [player for player, _ in sorted_players] if sorted_players else sorted(avg_points_as_wind['spieler'].unique())
+    avg_points_as_wind['spieler'] = pd.Categorical(avg_points_as_wind['spieler'], categories=player_order, ordered=True)
+    avg_points_as_wind = avg_points_as_wind.sort_values('spieler')
+    
+    # Create bar colors using player color map
+    bar_colors_avg = [player_color_map.get(player, '#7f7f7f') for player in avg_points_as_wind['spieler']]
+    
+    # Netto average bar chart (visible by default)
+    formatted_netto = [f"{int(val):,}".replace(",", ".") for val in avg_points_as_wind['avg_netto']]
+    fig.add_trace(
+        go.Bar(
+            x=avg_points_as_wind['spieler'],
+            y=avg_points_as_wind['avg_netto'],
+            name='Ø Netto als Wind',
+            marker_color=bar_colors_avg,
+            text=formatted_netto,
+            textposition='inside',
+            insidetextanchor='start',
+            textfont=dict(size=14, color='black'),
+            showlegend=False,
+            visible=True
+        ),
+        row=4, col=2
+    )
+    
+    # Delta average bar chart (hidden by default)
+    formatted_delta = [f"{int(val):,}".replace(",", ".") for val in avg_points_as_wind['avg_delta']]
+    fig.add_trace(
+        go.Bar(
+            x=avg_points_as_wind['spieler'],
+            y=avg_points_as_wind['avg_delta'],
+            name='Ø Delta als Wind',
+            marker_color=bar_colors_avg,
+            text=formatted_delta,
+            textposition='inside',
+            insidetextanchor='start',
+            textfont=dict(size=14, color='black'),
+            showlegend=False,
+            visible=False
+        ),
+        row=4, col=2
+    )
+    
+    fig.update_xaxes(
+        row=4, col=2,
+        tickfont=dict(size=14)
+    )
+    
+    # Collect values from row 4 col 2 bar charts for shared y-axis range
+    all_netto_values.extend(list(avg_points_as_wind['avg_netto']))
+    all_delta_values.extend(list(avg_points_as_wind['avg_delta']))
+    
+    # Calculate shared y-axis ranges with some padding
+    netto_min = min(all_netto_values) if all_netto_values else 0
+    netto_max = max(all_netto_values) if all_netto_values else 0
+    delta_min = min(all_delta_values) if all_delta_values else 0
+    delta_max = max(all_delta_values) if all_delta_values else 0
+    
+    # Add 10% padding at bottom and top
+    netto_range_size = abs(netto_max - netto_min)
+    netto_padding = netto_range_size * 0.10 if netto_range_size > 0 else 100
+    delta_range_size = abs(delta_max - delta_min)
+    delta_padding = delta_range_size * 0.10 if delta_range_size > 0 else 100
+    
+    # Set initial y-axis ranges for both bar charts (netto by default)
+    shared_netto_range = [netto_min - netto_padding, netto_max + netto_padding]
+    shared_delta_range = [delta_min - delta_padding, delta_max + delta_padding]
+    
+    fig.update_yaxes(title_text="Ø Nettopunkte", range=shared_netto_range, row=3, col=2)
+    fig.update_yaxes(title_text="Ø Nettopunkte", range=shared_netto_range, row=4, col=2)
 
     # Update layout
     total_traces = len(fig.data)
@@ -378,14 +588,32 @@ def _create_overview_figure(
     for i in range(num_players):
         delta_boxplot_visibility.extend([False, True])
     
-    # Wind analysis trace at the end should always be visible
+    # Average points per player bar charts: netto visible, delta hidden
+    avg_player_bar_netto_visibility = [True, False]
+    avg_player_bar_delta_visibility = [False, True]
+    
+    # Wind analysis trace should always be visible
     wind_visibility = [True]
     
-    netto_visible = base_visibility + netto_boxplot_visibility + wind_visibility
-    delta_visible = base_visibility + delta_boxplot_visibility + wind_visibility
+    # Wind performance boxplots: netto visible, delta hidden (same pattern as main boxplot)
+    wind_perf_netto_visibility = []
+    for i in range(num_players_wind):
+        wind_perf_netto_visibility.extend([True, False])
+    
+    # Wind performance boxplots: netto hidden, delta visible
+    wind_perf_delta_visibility = []
+    for i in range(num_players_wind):
+        wind_perf_delta_visibility.extend([False, True])
+    
+    # Average points as wind bar charts: netto visible, delta hidden
+    avg_wind_bar_netto_visibility = [True, False]
+    avg_wind_bar_delta_visibility = [False, True]
+    
+    netto_visible = base_visibility + netto_boxplot_visibility + avg_player_bar_netto_visibility + wind_visibility + wind_perf_netto_visibility + avg_wind_bar_netto_visibility
+    delta_visible = base_visibility + delta_boxplot_visibility + avg_player_bar_delta_visibility + wind_visibility + wind_perf_delta_visibility + avg_wind_bar_delta_visibility
     
     fig.update_layout(
-        height=1200,
+        height=1600,
         title_text="Mahjong Dashboard - Übersicht aller Runden",
         title_font_size=24,
         showlegend=True,
@@ -394,7 +622,7 @@ def _create_overview_figure(
         legend=dict(
             orientation='h',
             yanchor='top',
-            y=0.70,
+            y=0.55,
             xanchor='left',
             x=0.0
         ),
@@ -406,7 +634,14 @@ def _create_overview_figure(
                     dict(
                         args=[
                             {"visible": netto_visible},
-                            {"yaxis4.title.text": "Nettopunkte (inkl. Verdopplungen)"}
+                            {
+                                "yaxis4.title.text": "Nettopunkte (inkl. Verdopplungen)",
+                                "yaxis5.title.text": "Ø Nettopunkte",
+                                "yaxis5.range": shared_netto_range,
+                                "yaxis6.title.text": "Nettopunkte als Wind des Spiels",
+                                "yaxis7.title.text": "Ø Nettopunkte",
+                                "yaxis7.range": shared_netto_range
+                            }
                         ],
                         label="Nettopunkte",
                         method="update"
@@ -414,7 +649,14 @@ def _create_overview_figure(
                     dict(
                         args=[
                             {"visible": delta_visible},
-                            {"yaxis4.title.text": "Punkte Delta (mit Schulden)"}
+                            {
+                                "yaxis4.title.text": "Punkte Delta (mit Schulden)",
+                                "yaxis5.title.text": "Ø Punkte Delta",
+                                "yaxis5.range": shared_delta_range,
+                                "yaxis6.title.text": "Punkte Delta als Wind des Spiels",
+                                "yaxis7.title.text": "Ø Punkte Delta",
+                                "yaxis7.range": shared_delta_range
+                            }
                         ],
                         label="Punktedifferenz",
                         method="update"
@@ -424,8 +666,8 @@ def _create_overview_figure(
                 showactive=True,
                 x=0.0,
                 xanchor="left",
-                y=-0.05,
-                yanchor="top",
+                y=0.50,
+                yanchor="bottom",
                 bgcolor="lightgray",
                 bordercolor="gray",
                 borderwidth=1
