@@ -87,7 +87,7 @@
         
         # Header
         BoxLayout:
-            size_hint_y: 0.25
+            size_hint_y: 0.15
             Label:
                 text: "Was möchten Sie tun?"
                 font_size: font_config.font_size_big
@@ -95,108 +95,64 @@
                 valign: 'middle'
                 text_size: self.size
 
+        # Folder info display
+        BoxLayout:
+            size_hint_y: 0.1
+            Label:
+                text: root.folder_info
+                font_size: font_config.font_size_medium
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                shorten: True
+                shorten_from: 'center'
+                padding: [WIDGET_SPACING, WIDGET_SPACING]
+
+        # Status message display
+        BoxLayout:
+            size_hint_y: 0.15
+            Label:
+                text: root.status_message
+                font_size: font_config.font_size_medium
+                halign: 'center'
+                valign: 'middle'
+                text_size: self.size
+                shorten: False
+                padding: [WIDGET_SPACING, WIDGET_SPACING]
+                color: (0.2, 0.8, 0.2, 1) if "✓" in root.status_message else (1, 0.3, 0.3, 1) if "Fehler" in root.status_message else (1, 1, 1, 1)
+
         # Spacer
         Widget:
-            size_hint_y: 0.1
+            size_hint_y: 0.05
 
         # Buttons
         BoxLayout:
-            size_hint_y: 0.65
+            size_hint_y: 0.55
             orientation: 'vertical'
             spacing: WIDGET_SPACING
             
             PrimaryButton:
                 text: "Neue Runde"
                 font_size: font_config.font_size_medium
-                size_hint_y: 0.2
+                size_hint_y: 0.25
                 on_release: root.start_new_game()
             
             SecondaryButton:
-                text: "Auswertung erstellen"
-                font_size: font_config.font_size_medium
-                size_hint_y: 0.2
-                on_release: root.create_evaluation()
-            
-            # Spacer
-            Widget:
-                size_hint_y: 0.6
-
-<EvaluationScreen>:
-    BoxLayout:
-        orientation: 'vertical'
-        padding: [SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING, SCREEN_PADDING]
-        spacing: SECTION_SPACING
-        
-        # Header
-        BoxLayout:
-            size_hint_y: 0.15
-            Label:
-                text: "Spielauswertung erstellen"
-                font_size: font_config.font_size_big
-                halign: 'center'
-                valign: 'middle'
-                text_size: self.size
-
-        # Spacer
-        Widget:
-            size_hint_y: 0.1
-
-        # Body - Button and folder info
-        BoxLayout:
-            size_hint_y: 0.60
-            orientation: 'vertical'
-            spacing: WIDGET_SPACING
-            
-            PrimaryButton:
                 text: "Auswertung erstellen" if not root.is_loading else "⏳ Erstelle Dashboard..."
                 font_size: font_config.font_size_medium
-                size_hint_y: 0.2
+                size_hint_y: 0.25
                 disabled: root.is_loading
                 on_release: root.create_evaluation()
             
             SecondaryButton:
                 text: "Ordner öffnen"
                 font_size: font_config.font_size_medium
-                size_hint_y: 0.2
+                size_hint_y: 0.25
                 on_release: root.open_folder()
             
-            # Status message display
-            BoxLayout:
-                size_hint_y: 0.2
-                Label:
-                    text: root.status_message
-                    font_size: font_config.font_size_small
-                    halign: 'center'
-                    valign: 'middle'
-                    text_size: self.size
-                    shorten: False
-                    padding: [WIDGET_SPACING, WIDGET_SPACING]
-                    color: (0.2, 0.8, 0.2, 1) if "✓" in root.status_message else (1, 0.3, 0.3, 1) if "Fehler" in root.status_message else (1, 1, 1, 1)
-            
-            # Folder info display
-            BoxLayout:
-                size_hint_y: 0.15
-                Label:
-                    text: root.folder_info
-                    font_size: font_config.font_size_medium
-                    halign: 'center'
-                    valign: 'top'
-                    text_size: self.size
-                    shorten: True
-                    shorten_from: 'center'
-                    padding: [WIDGET_SPACING, WIDGET_SPACING]
-            
-            # Spacer for remaining space
+            # Spacer
             Widget:
-                size_hint_y: 0.45
-
-        # Footer
-        BoxLayout:
-            size_hint_y: 0.15
-            SecondaryButton:
-                text: "Zurück"
-                font_size: font_config.font_size_medium
-                on_release: root.back_to_menu()
+                size_hint_y: 0.25
 
 <StartScreen>:
     BoxLayout:
