@@ -178,7 +178,7 @@ class AddPointsScreen(Screen):
                         )
                         anim.start(checkbox_container.canvas.before.children[0])
             
-            show_error("Bitte wählen Sie einen Gewinner aus.")
+            show_error("Kein Gewinner ausgewählt.")
             return
 
         # Create a dictionary to store points for each player

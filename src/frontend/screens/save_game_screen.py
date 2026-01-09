@@ -39,7 +39,7 @@ class SaveGameScreen(Screen):
 
         # Add helper label for filename input
         filename_helper = Label(
-            text="Bitte geben Sie einen Dateinamen für die Rundenaufzeichnung ein:",
+            text="Bitte gib einen Dateinamen für die Rundenaufzeichnung ein:",
             font_size=font_config.font_size_medium,
             size_hint_y=0.1
         )
@@ -94,7 +94,7 @@ class SaveGameScreen(Screen):
             full_path = Path(f"{filename}.xlsx")
         
         if os.path.exists(full_path):
-            show_error(f"Die Datei '{full_path}' existiert bereits.\nBitte wählen Sie einen anderen Dateinamen.")
+            show_error(f"Die Datei '{full_path}' existiert bereits.\nBitte wähle einen anderen Dateinamen.")
             return
         
         # Disable input field and update with final filename

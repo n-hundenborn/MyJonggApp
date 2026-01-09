@@ -105,6 +105,9 @@ def create_html_dashboard(
                 📊 Gesamtansicht - alle Runden
             </button>
             <!-- Future pages can be added here -->
+            <span style="margin-left: 30px; font-size: 14px; color: white; font-style: italic;">
+                Nettopunkte: Punkte inkl. Verdopplungen | Punktedifferenz: Nettopunkte inkl. Schulden mit allen Spielern
+            </span>
         </div>
 
         <div id="overview-page" class="page active">
