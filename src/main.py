@@ -2,6 +2,7 @@ from kivy.app import App
 from backend.game import Game
 from kivy.uix.screenmanager import ScreenManager
 from frontend.screens.welcome_screen import WelcomeScreen
+from frontend.screens.game_mode_screen import GameModeScreen
 from frontend.screens.start_screen import StartScreen
 from frontend.screens.scoreboard_screen import ScoreboardScreen
 from frontend.screens.add_points_screen import AddPointsScreen
@@ -32,6 +33,7 @@ class GameApp(App):
         # Add screens that need direct game instance
         screens = {
             'welcome': WelcomeScreen(name='welcome', game=game_instance),
+            'game_mode': GameModeScreen(name='game_mode', game=game_instance),
             'start': StartScreen(name='start', game=game_instance),
             'scoreboard': ScoreboardScreen(name='scoreboard', game=game_instance),
             'add_points': AddPointsScreen(name='add_points', game=game_instance),
@@ -85,5 +87,8 @@ class GameApp(App):
             if hasattr(screen, 'update_fonts'):
                 screen.update_fonts()
 
+
 if __name__ == '__main__':
-    GameApp().run()
+    from multiprocessing import Process, freeze_support
+    freeze_support()
+    Process(target=GameApp().run()).start()

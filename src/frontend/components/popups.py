@@ -107,3 +107,124 @@ def show_error(message: str):
     """Utility function to show error popup"""
     popup = ErrorPopup(message)
     popup.open()
+
+
+class LoadingResultsPopup(Popup):
+    """Popup to display Excel file loading results after evaluation."""
+    def __init__(self, loading_info: dict, **kwargs):
+        loaded = loading_info.get('loaded', [])
+        failed = loading_info.get('failed', [])
+        
+        # Build message text
+        message_parts = []
+        
+        if loaded:
+            message_parts.append(f"✓ Erfolgreich geladen ({len(loaded)}):")
+            for filename in loaded:
+                message_parts.append(f"  • {filename}")
+        
+        if failed:
+            if loaded:
+                message_parts.append("")  # Empty line for spacing
+            message_parts.append(f"✗ Fehler beim Laden ({len(failed)}):")
+            for filename in failed:
+                message_parts.append(f"  • {filename}")
+        
+        if not loaded and not failed:
+            message_parts.append("Keine Excel-Dateien gefunden.")
+        
+        message = "\n".join(message_parts)
+        
+        # Set modern styling before init
+        kwargs.update({
+            'background': '',
+            'background_color': [0, 0, 0, 0],
+            'title': 'Laden der Excel-Dateien',
+            'title_size': font_config.font_size_big,
+            'title_align': 'center',
+            'title_color': K_TEXT_PRIMARY,
+            'separator_height': 0,
+            'size_hint': (0.8, None),
+            'height': dp(400),
+            'size_hint_min_x': dp(450),
+        })
+        super().__init__(**kwargs)
+        
+        # Store references for font updates
+        self.message_label = None
+        self.close_button = None
+        
+        # Create content layout with card styling
+        content = Card()
+        
+        # Apply card styling to popup
+        with self.canvas.before:
+            Color(*K_SURFACE)
+            self.background_rect = RoundedRectangle(
+                pos=self.pos,
+                size=self.size,
+                radius=CARD_STYLES['default']['border_radius']
+            )
+        self.bind(pos=self._update_background, size=self._update_background)
+        
+        # Message label with modern styling
+        self.message_label = Label(
+            text=message,
+            text_size=(None, None),
+            size_hint_y=0.8,
+            halign='left',
+            valign='top',
+            font_size=font_config.font_size_small,
+            color=K_TEXT_PRIMARY,
+            padding=(dp(20), dp(10))
+        )
+        
+        # Close button with modern styling
+        self.close_button = StyledButton(
+            text='OK',
+            on_release=self.dismiss,
+            size_hint_y=0.2
+        )
+        
+        # Add widgets to layout
+        content.add_widget(self.message_label)
+        content.add_widget(self.close_button)
+        
+        # Set the content
+        self.content = content
+        
+        # Bind to window resize to update fonts and layout
+        Window.bind(size=self._on_window_resize)
+        
+        # Update text_size after content is ready
+        self.bind(size=self._update_text_size)
+    
+    def _update_background(self, instance, value):
+        """Update the background rectangle when popup size/position changes"""
+        if hasattr(self, 'background_rect'):
+            self.background_rect.pos = self.pos
+            self.background_rect.size = self.size
+
+    def _on_window_resize(self, *args):
+        """Update popup elements when window is resized"""
+        self.title_size = font_config.font_size_big
+        
+        if self.message_label:
+            self.message_label.font_size = font_config.font_size_small
+            self.message_label.text_size = (self.width * 0.9, None)
+    
+    def _update_text_size(self, *args):
+        """Update text wrapping size when popup size changes"""
+        if self.message_label and self.size[0] > 0:
+            self.message_label.text_size = (self.size[0] * 0.9, None)
+    
+    def dismiss(self, *args):
+        """Clean up window binding when popup is dismissed"""
+        Window.unbind(size=self._on_window_resize)
+        super().dismiss()
+
+
+def show_loading_results(loading_info: dict):
+    """Utility function to show loading results popup"""
+    popup = LoadingResultsPopup(loading_info)
+    popup.open()

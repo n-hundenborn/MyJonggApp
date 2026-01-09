@@ -26,18 +26,7 @@ class WelcomeScreen(Screen):
     def update_folder_info(self):
         """Update the folder info display."""
         if self.game and self.game.game_folder:
-            # Shorten the path if it's too long
-            path = str(self.game.game_folder)
-            if len(path) > 70:  # Adjust this number based on your needs
-                # Keep the first part and last part, with ... in between
-                parts = self.game.game_folder.parts
-                if len(parts) > 4:
-                    shortened = str(self.game.game_folder.parts[0]) + os.sep + '...' + os.sep + os.sep.join(parts[-2:])
-                else:
-                    shortened = path
-            else:
-                shortened = path
-            self.folder_info = f"Rundenordner:\n{shortened}"
+            self.folder_info = f"Ordner:\n{str(self.game.game_folder)}"
             self.can_proceed = True
         else:
             self.folder_info = "Kein Ordner ausgewählt"
@@ -92,21 +81,14 @@ class WelcomeScreen(Screen):
             # Stay on welcome screen if there's an error
 
     def use_default_folder(self):
-        """Create and use default folder in program directory."""
+        """Set default folder path (folder will be created when proceeding)."""
         default_name = self.get_default_folder_name()
         default_path = os.path.join(self.get_program_directory(), default_name)
         
-        try:
-            # Create folder if it doesn't exist
-            if not os.path.exists(default_path):
-                os.makedirs(default_path)
-            
-            print(f"Using default folder: {default_path}")
-            self.set_game_folder(default_path)
-            print(f"Can proceed: {self.can_proceed}")
-            
-        except Exception as e:
-            print(f"Error creating default folder: {e}")
+        print(f"Selected default folder: {default_path}")
+        # Just set the path, don't create the folder yet
+        self.set_game_folder(default_path)
+        print(f"Can proceed: {self.can_proceed}")
 
     def set_game_folder(self, folder_path: str | Path):
         """Set the game folder and update display."""
@@ -114,13 +96,18 @@ class WelcomeScreen(Screen):
             self.game.set_game_folder(folder_path)
         self.update_folder_info()
 
-    def proceed_to_start_screen(self):
-        """Proceed to start screen if folder is selected."""
-        if self.game and self.game.game_folder:
-            self.manager.current = 'start'
-        else:
-            # This shouldn't happen as buttons should be disabled, but just in case
+    def proceed_to_next_screen(self):
+        """Proceed to start screen. Creates folder if it doesn't exist yet."""
+        if not self.game or not self.game.game_folder:
             print("No folder selected")
+
+        folder_path = str(self.game.game_folder)
+        # Create folder if it doesn't exist
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+            print(f"Created folder: {folder_path}")
+        
+        self.manager.current = 'game_mode'
 
     def update_fonts(self):
         """Update all font sizes when window is resized."""

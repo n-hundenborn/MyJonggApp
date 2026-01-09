@@ -192,6 +192,16 @@ class Game:
         self.end_time = datetime.now(tz=timezone.utc).astimezone()
         logger.info(f"Game ended at {self.end_time.isoformat()}")
 
+    def start_game(self) -> None:
+        """Capture the start time of the game with local timezone."""
+        self.start_time = datetime.now(tz=timezone.utc).astimezone()
+        logger.info(f"Game started at {self.start_time.isoformat()}")
+
+    def end_game(self) -> None:
+        """Capture the end time of the game with local timezone."""
+        self.end_time = datetime.now(tz=timezone.utc).astimezone()
+        logger.info(f"Game ended at {self.end_time.isoformat()}")
+
     def start_new_round(self, winner_wind: Wind) -> None:
         """Sets round wind according to the last wind and winning wind."""
         self.round_wind = get_next_round_wind(winner_wind, self.round_wind)
