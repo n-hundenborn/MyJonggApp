@@ -87,5 +87,8 @@ class GameApp(App):
             if hasattr(screen, 'update_fonts'):
                 screen.update_fonts()
 
+
 if __name__ == '__main__':
-    GameApp().run()
+    from multiprocessing import Process, freeze_support
+    freeze_support()
+    Process(target=GameApp().run()).start()

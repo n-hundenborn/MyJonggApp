@@ -106,7 +106,7 @@ def create_html_dashboard(
             </button>
             <!-- Future pages can be added here -->
             <span style="margin-left: 30px; font-size: 14px; color: white; font-style: italic;">
-                Nettopunkte: Punkte inkl. Verdopplungen | Punktedifferenz: Nettopunkte inkl. Schulden mit allen Spielern
+                ℹ️ Nettopunkte: Punkte inkl. Verdopplungen | Punkte Delta: Nettopunkte inkl. Schulden mit allen Spielern
             </span>
         </div>
 
@@ -162,7 +162,7 @@ def _create_overview_figure(
     3. Laufende Summe der Gesamtpunktzahl über alle Spiele
     4. Ø Nettopunkte je Spieler
     5. Wind-Vorteil Analyse
-    6. Performance als Wind des Spiels
+    6. Performance als Spielführer
     """
     # Create subplot grid
     fig = make_subplots(
@@ -173,7 +173,7 @@ def _create_overview_figure(
             'Laufende Summe der Gesamtpunktzahl über alle Spiele',
             'Punkteverteilung je Spieler (Boxplot)',
             'Ø Punkte',
-            'Spielführer Analyse',
+            'Punkte als Spielführer',
             'Ø Punkte als Spielführer',
             'Wind-Vorteil Analyse'
         ),
@@ -529,7 +529,7 @@ def _create_overview_figure(
             row=4, col=1
         )
     
-    fig.update_yaxes(title_text="Nettopunkte als Wind des Spiels", row=4, col=1)
+    fig.update_yaxes(title_text="Nettopunkte", row=4, col=1)
 
     # Bar charts: Average points as wind_des_spiels
     # Calculate average netto and delta points for each player
@@ -700,10 +700,10 @@ def _create_overview_figure(
                         args=[
                             {"visible": netto_visible},
                             {
-                                "yaxis4.title.text": "Nettopunkte (inkl. Verdopplungen)",
+                                "yaxis4.title.text": "Nettopunkte",
                                 "yaxis5.title.text": "Ø Nettopunkte",
                                 "yaxis5.range": shared_netto_range,
-                                "yaxis6.title.text": "Nettopunkte als Wind des Spiels",
+                                "yaxis6.title.text": "Spielführer",
                                 "yaxis7.title.text": "Ø Nettopunkte",
                                 "yaxis7.range": shared_netto_range
                             }
@@ -715,15 +715,15 @@ def _create_overview_figure(
                         args=[
                             {"visible": delta_visible},
                             {
-                                "yaxis4.title.text": "Punkte Delta (mit Schulden)",
+                                "yaxis4.title.text": "Punkte Delta",
                                 "yaxis5.title.text": "Ø Punkte Delta",
                                 "yaxis5.range": shared_delta_range,
-                                "yaxis6.title.text": "Punkte Delta als Wind des Spiels",
+                                "yaxis6.title.text": "Punkte Delta",
                                 "yaxis7.title.text": "Ø Punkte Delta",
                                 "yaxis7.range": shared_delta_range
                             }
                         ],
-                        label="Punktedifferenz",
+                        label="Punkte Delta",
                         method="update"
                     )
                 ],
@@ -788,7 +788,7 @@ def _create_overview_figure(
         row=3, col=1,
         tickfont=dict(size=14)
     )
-    fig.update_yaxes(title_text="Nettopunkte (inkl. Verdopplungen)", row=3, col=1)
+    fig.update_yaxes(title_text="Nettopunkte", row=3, col=1)
     
     fig.update_xaxes(
         row=3, col=2,
