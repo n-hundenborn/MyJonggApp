@@ -64,18 +64,16 @@ def prepare_round_data(
         'punkte_netto',
         'punkte_delta',
         'punktestand',
-        'rang'
+        'rang',
+        'spielstart',
+        'spielende'
     ]
 
     # Extract unique game metadata (one row per game)
     df_games_meta = df_games[[
-        'spiel_index', 'wind_des_spiels', 'gewinner_wind'
+        'spiel_index', 'wind_des_spiels', 'gewinner_wind', 'spielstart', 'spielende'
     ]].drop_duplicates().copy()
     df_games_meta['runden_id'] = file_hash
-
-    # Add timestamps from metadata
-    df_games_meta['spielstart'] = df_meta.at[0, 'rundenstart']
-    df_games_meta['spielende'] = df_meta.at[0, 'rundenende']
 
     # Reorder columns
     df_games_meta = df_games_meta[[

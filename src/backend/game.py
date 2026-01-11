@@ -98,6 +98,8 @@ class Round:
     round_wind: Wind
     winner: Wind
     scores: list[Score]
+    start_time: datetime = None
+    end_time: datetime = None
 
     def calculate_point_transfers(self) -> dict[Player, int]:
         """Calculate net scores for the current round."""
@@ -192,16 +194,6 @@ class Game:
         self.end_time = datetime.now(tz=timezone.utc).astimezone()
         logger.info(f"Game ended at {self.end_time.isoformat()}")
 
-    def start_game(self) -> None:
-        """Capture the start time of the game with local timezone."""
-        self.start_time = datetime.now(tz=timezone.utc).astimezone()
-        logger.info(f"Game started at {self.start_time.isoformat()}")
-
-    def end_game(self) -> None:
-        """Capture the end time of the game with local timezone."""
-        self.end_time = datetime.now(tz=timezone.utc).astimezone()
-        logger.info(f"Game ended at {self.end_time.isoformat()}")
-
     def start_new_round(self, winner_wind: Wind) -> None:
         """Sets round wind according to the last wind and winning wind."""
         self.round_wind = get_next_round_wind(winner_wind, self.round_wind)
@@ -220,7 +212,8 @@ class Game:
         current_round = Round(
             round_wind=self.round_wind,
             winner=winner,
-            scores=scores
+            scores=scores,
+            start_time=datetime.now(tz=timezone.utc).astimezone()
         )
         current_round.process_points()
         self.rounds.append(current_round)
@@ -292,7 +285,9 @@ class Game:
                     'calculated_points': score.calculated_points,
                     'net_points': score.net_points,
                     'running_sum': running_sums[score.player.name],
-                    'rank': ranks[score.player.name]
+                    'rank': ranks[score.player.name],
+                    'spielstart': round.start_time.isoformat() if round.start_time else None,
+                    'spielende': round.end_time.isoformat() if round.end_time else None
                 }
                 rounds_data.append(round_info)
         self.game_data = pd.DataFrame(rounds_data)
