@@ -3,8 +3,8 @@
 from pathlib import Path
 from src.backend.evaluation.orchestrator import start_evaluation
 
-# Test with the existing mahjongg folder
-folder_path = Path(__file__).parent / "mahjongg-2026-01-03"
+# Test with an existing and filled mahjongg folder
+folder_path = Path(__file__).parent / "testfolder"
 
 print(f"Generating dashboard from: {folder_path}")
 html_file = start_evaluation(folder_path)

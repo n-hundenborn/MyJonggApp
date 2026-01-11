@@ -65,7 +65,10 @@ class RoundSummaryScreen(Screen):
 
     def confirm_points(self):
         """Apply the points and proceed to the next screen."""
+        from datetime import datetime, timezone
         current_round = self.game.rounds[-1]
+        # Capture end time of this game
+        current_round.end_time = datetime.now(tz=timezone.utc).astimezone()
         
         if self.game.is_game_over(current_round.winner):
             self.game.end_game()

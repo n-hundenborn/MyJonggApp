@@ -1,6 +1,6 @@
 [project]
 name = "myjongg"
-version = "1.8.0"
+version = "2.1.0"
 description = "MyJongg Calculator Application"
 requires-python = ">=3.12"
 dependencies = [

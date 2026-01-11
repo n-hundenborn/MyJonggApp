@@ -71,7 +71,9 @@ def prepare_dataframes_for_saving(df: pd.DataFrame) -> tuple[pd.DataFrame, pd.Da
         'calculated_points': 'Rundenpunkte',
         'net_points': 'Punkteänderung',
         'running_sum': 'Laufende Summe',
-        'rank': 'Rang'
+        'rank': 'Rang',
+        'spielstart': 'Spielstart',
+        'spielende': 'Spielende'
     }
     
     standings_columns = {
