@@ -53,7 +53,8 @@ def prepare_round_data(
     ]].copy()
 
     # 2. Create Spiel-Metadaten (Game-level)
-    df_games.columns = [
+    # Handle both old files (without spielstart/spielende) and new files (with them)
+    expected_columns = [
         'spiel_index',
         'wind_des_spiels',
         'gewinner_wind',
@@ -64,10 +65,20 @@ def prepare_round_data(
         'punkte_netto',
         'punkte_delta',
         'punktestand',
-        'rang',
-        'spielstart',
-        'spielende'
+        'rang'
     ]
+    
+    # Check if timing columns exist (new format)
+    if len(df_games.columns) > 11:
+        expected_columns.extend(['spielstart', 'spielende'])
+    
+    df_games.columns = expected_columns
+    
+    # Add timing columns as None if they don't exist (old format compatibility)
+    if 'spielstart' not in df_games.columns:
+        df_games['spielstart'] = None
+    if 'spielende' not in df_games.columns:
+        df_games['spielende'] = None
 
     # Extract unique game metadata (one row per game)
     df_games_meta = df_games[[
