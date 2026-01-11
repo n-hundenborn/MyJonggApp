@@ -166,10 +166,11 @@ def _create_overview_figure(
     """
     # Create subplot grid
     fig = make_subplots(
-        rows=5, cols=2,
+        rows=6, cols=2,
         subplot_titles=(
             'Podium - Siegerpunkte',
             'Podium - Gesamtpunktzahl',
+            'Rang nach Siegerpunkten über alle Runden',
             'Laufende Summe der Gesamtpunktzahl über alle Spiele',
             'Punkteverteilung je Spieler (Boxplot)',
             'Ø Punkte',
@@ -180,13 +181,14 @@ def _create_overview_figure(
         specs=[
             [{'type': 'bar'}, {'type': 'bar'}],
             [{'type': 'scatter', 'colspan': 2}, None],
+            [{'type': 'scatter', 'colspan': 2}, None],
             [{'type': 'box'}, {'type': 'bar'}],
             [{'type': 'box'}, {'type': 'bar'}],
             [{'type': 'bar', 'colspan': 2}, None]
         ],
         vertical_spacing=0.08,
         horizontal_spacing=0.12,
-        row_heights=[0.20, 0.30, 0.18, 0.18, 0.14]
+        row_heights=[0.18, 0.22, 0.22, 0.16, 0.16, 0.12]
     )
 
     # Siegerpunkte by Player
@@ -257,6 +259,71 @@ def _create_overview_figure(
         row=1, col=2
     )
 
+    # Cumulative Rank Timeline (by Rounds)
+    # Unpivot Siegerpunkte data from df_rounds
+    df_rounds_sorted = df_rounds.sort_values('rundenstart').reset_index(drop=True)
+    df_rounds_sorted['round_index'] = df_rounds_sorted.index + 1
+    
+    # Unpivot siegerpunkte columns
+    siegerpunkte_melted = pd.melt(
+        df_rounds_sorted,
+        id_vars=['runden_id', 'rundenstart', 'round_index'],
+        value_vars=['siegerpunkte_osten', 'siegerpunkte_sueden', 'siegerpunkte_westen', 'siegerpunkte_norden'],
+        var_name='wind_column',
+        value_name='siegerpunkte'
+    )
+    
+    # Unpivot player columns
+    player_melted = pd.melt(
+        df_rounds_sorted,
+        id_vars=['runden_id', 'rundenstart', 'round_index'],
+        value_vars=['spieler_osten', 'spieler_sueden', 'spieler_westen', 'spieler_norden'],
+        var_name='wind_column',
+        value_name='spieler'
+    )
+    
+    # Extract wind suffix to align siegerpunkte with players
+    siegerpunkte_melted['wind'] = siegerpunkte_melted['wind_column'].str.replace('siegerpunkte_', '')
+    player_melted['wind'] = player_melted['wind_column'].str.replace('spieler_', '')
+    
+    # Merge to create long format: round_index, spieler, siegerpunkte
+    df_siegerpunkte_long = siegerpunkte_melted.merge(
+        player_melted[['runden_id', 'round_index', 'wind', 'spieler']],
+        on=['runden_id', 'round_index', 'wind'],
+        how='left'
+    )
+    
+    # Calculate cumulative Siegerpunkte per player
+    df_siegerpunkte_long = df_siegerpunkte_long.sort_values(['rundenstart', 'round_index'])
+    df_siegerpunkte_long['cumulative_siegerpunkte'] = df_siegerpunkte_long.groupby('spieler')['siegerpunkte'].cumsum()
+    
+    # Calculate rank at each round (highest cumulative = rank 1)
+    df_siegerpunkte_long['rank'] = df_siegerpunkte_long.groupby('round_index')['cumulative_siegerpunkte'].rank(
+        method='min', ascending=False
+    )
+    
+    # Sort by round_index and rank so hover displays players in rank order (1 to 4)
+    df_siegerpunkte_long = df_siegerpunkte_long.sort_values(['round_index', 'rank'])
+    
+    # Plot rank timeline for each player
+    for player in sorted(df_siegerpunkte_long['spieler'].unique()):
+        player_data = df_siegerpunkte_long[df_siegerpunkte_long['spieler'] == player]
+        player_color = player_color_map.get(player, '#7f7f7f')
+        fig.add_trace(
+            go.Scatter(
+                x=player_data['round_index'],
+                y=player_data['rank'],
+                mode='lines+markers',
+                name=player,
+                line=dict(width=2, color=player_color, shape='linear'),
+                marker=dict(size=6, color=player_color),
+                customdata=player_data['cumulative_siegerpunkte'],
+                hovertemplate='<b>%{fullData.name}</b><br>Rang: %{y}<br>Siegerpunkte: %{customdata}<extra></extra>',
+                showlegend=False
+            ),
+            row=2, col=1
+        )
+
     # Cumulative Points Timeline
     # Prepare continuous game index
     df_points_sorted = df_points.merge(
@@ -285,7 +352,7 @@ def _create_overview_figure(
                 line=dict(width=2, color=player_color),
                 marker=dict(size=4, color=player_color)
             ),
-            row=2, col=1
+            row=3, col=1
         )
 
     # Boxplot for Points Distribution
@@ -309,7 +376,7 @@ def _create_overview_figure(
                 visible=True,
                 showlegend=False
             ),
-            row=3, col=1
+            row=4, col=1
         )
         
         # Delta points boxplot
@@ -321,7 +388,7 @@ def _create_overview_figure(
                 visible=False,
                 showlegend=False
             ),
-            row=3, col=1
+            row=4, col=1
         )
 
     # Average points bar chart per player (row 3, col 2)
@@ -347,7 +414,7 @@ def _create_overview_figure(
             showlegend=False,
             visible=True
         ),
-        row=3, col=2
+        row=4, col=2
     )
     
     # Add text labels at y=0 for netto
@@ -363,7 +430,7 @@ def _create_overview_figure(
             hoverinfo='skip',
             visible=True
         ),
-        row=3, col=2
+        row=4, col=2
     )
     
     # Delta average bar chart (hidden by default)
@@ -377,7 +444,7 @@ def _create_overview_figure(
             showlegend=False,
             visible=False
         ),
-        row=3, col=2
+        row=4, col=2
     )
     
     # Add text labels at y=0 for delta
@@ -393,11 +460,11 @@ def _create_overview_figure(
             hoverinfo='skip',
             visible=False
         ),
-        row=3, col=2
+        row=4, col=2
     )
     
     fig.update_xaxes(
-        row=3, col=2,
+        row=4, col=2,
         tickfont=dict(size=14)
     )
     
@@ -446,7 +513,7 @@ def _create_overview_figure(
             textfont=dict(size=17, color='black'),
             showlegend=False
         ),
-        row=5, col=1
+        row=6, col=1
     )
     
     # Add expected 25% reference line
@@ -454,17 +521,17 @@ def _create_overview_figure(
         y=25,
         line_dash="dash",
         line_color="red",
-        row=5, col=1
+        row=6, col=1
     )
     
     fig.update_yaxes(
         title_text="Gewinnrate (%)",
-        row=5, col=1
+        row=6, col=1
     )
     
     fig.update_xaxes(
         title_text="Windposition",
-        row=5, col=1
+        row=6, col=1
     )
 
     # Wind Performance Analysis (as wind_des_spiels)
@@ -514,7 +581,7 @@ def _create_overview_figure(
                 visible=True,
                 showlegend=False
             ),
-            row=4, col=1
+            row=5, col=1
         )
         
         # Delta points boxplot (hidden by default)
@@ -526,10 +593,10 @@ def _create_overview_figure(
                 visible=False,
                 showlegend=False
             ),
-            row=4, col=1
+            row=5, col=1
         )
     
-    fig.update_yaxes(title_text="Nettopunkte", row=4, col=1)
+    fig.update_yaxes(title_text="Nettopunkte", row=5, col=1)
 
     # Bar charts: Average points as wind_des_spiels
     # Calculate average netto and delta points for each player
@@ -556,7 +623,7 @@ def _create_overview_figure(
             showlegend=False,
             visible=True
         ),
-        row=4, col=2
+        row=5, col=2
     )
     
     # Add text labels at y=0 for netto
@@ -572,7 +639,7 @@ def _create_overview_figure(
             hoverinfo='skip',
             visible=True
         ),
-        row=4, col=2
+        row=5, col=2
     )
     
     # Delta average bar chart (hidden by default)
@@ -586,7 +653,7 @@ def _create_overview_figure(
             showlegend=False,
             visible=False
         ),
-        row=4, col=2
+        row=5, col=2
     )
     
     # Add text labels at y=0 for delta
@@ -602,11 +669,11 @@ def _create_overview_figure(
             hoverinfo='skip',
             visible=False
         ),
-        row=4, col=2
+        row=5, col=2
     )
     
     fig.update_xaxes(
-        row=4, col=2,
+        row=5, col=2,
         tickfont=dict(size=14)
     )
     
@@ -631,8 +698,8 @@ def _create_overview_figure(
     shared_netto_range = [min(0, netto_min - netto_padding), netto_max + netto_padding]
     shared_delta_range = [min(0, delta_min - delta_padding), delta_max + delta_padding]
     
-    fig.update_yaxes(title_text="Ø Nettopunkte", range=shared_netto_range, row=3, col=2)
     fig.update_yaxes(title_text="Ø Nettopunkte", range=shared_netto_range, row=4, col=2)
+    fig.update_yaxes(title_text="Ø Nettopunkte", range=shared_netto_range, row=5, col=2)
 
     # Update layout
     total_traces = len(fig.data)
@@ -678,7 +745,7 @@ def _create_overview_figure(
     delta_visible = base_visibility + delta_boxplot_visibility + avg_player_bar_delta_visibility + wind_visibility + wind_perf_delta_visibility + avg_wind_bar_delta_visibility
     
     fig.update_layout(
-        height=1600,
+        height=1800,
         title_text="Mahjong Dashboard - Übersicht aller Runden",
         title_font_size=24,
         showlegend=True,
@@ -687,7 +754,7 @@ def _create_overview_figure(
         legend=dict(
             orientation='h',
             yanchor='top',
-            y=0.55,
+            y=0.48,
             xanchor='left',
             x=0.0
         ),
@@ -700,12 +767,12 @@ def _create_overview_figure(
                         args=[
                             {"visible": netto_visible},
                             {
-                                "yaxis4.title.text": "Nettopunkte",
-                                "yaxis5.title.text": "Ø Nettopunkte",
-                                "yaxis5.range": shared_netto_range,
-                                "yaxis6.title.text": "Spielführer",
-                                "yaxis7.title.text": "Ø Nettopunkte",
-                                "yaxis7.range": shared_netto_range
+                                "yaxis5.title.text": "Nettopunkte",
+                                "yaxis6.title.text": "Ø Nettopunkte",
+                                "yaxis6.range": shared_netto_range,
+                                "yaxis7.title.text": "Nettopunkte",
+                                "yaxis8.title.text": "Ø Nettopunkte",
+                                "yaxis8.range": shared_netto_range
                             }
                         ],
                         label="Nettopunkte",
@@ -715,12 +782,12 @@ def _create_overview_figure(
                         args=[
                             {"visible": delta_visible},
                             {
-                                "yaxis4.title.text": "Punkte Delta",
-                                "yaxis5.title.text": "Ø Punkte Delta",
-                                "yaxis5.range": shared_delta_range,
-                                "yaxis6.title.text": "Punkte Delta",
-                                "yaxis7.title.text": "Ø Punkte Delta",
-                                "yaxis7.range": shared_delta_range
+                                "yaxis5.title.text": "Punkte Delta",
+                                "yaxis6.title.text": "Ø Punkte Delta",
+                                "yaxis6.range": shared_delta_range,
+                                "yaxis7.title.text": "Punkte Delta",
+                                "yaxis8.title.text": "Ø Punkte Delta",
+                                "yaxis8.range": shared_delta_range
                             }
                         ],
                         label="Punkte Delta",
@@ -731,7 +798,7 @@ def _create_overview_figure(
                 showactive=True,
                 x=0.0,
                 xanchor="left",
-                y=0.50,
+                y=0.43,
                 yanchor="bottom",
                 bgcolor="lightgray",
                 bordercolor="gray",
@@ -772,26 +839,45 @@ def _create_overview_figure(
         range=[min_gesamtpunktzahl - y_range_buffer_bottom, max_gesamtpunktzahl + y_range_buffer_top]
     )
 
+    # X-axis for rank timeline: show round numbers
+    max_rounds = df_siegerpunkte_long['round_index'].max() if not df_siegerpunkte_long.empty else 0
+    round_tick_interval = 1 if max_rounds <= 25 else 2
+    fig.update_xaxes(
+        title_text="Rundennummer",
+        row=2, col=1,
+        dtick=round_tick_interval,
+        tick0=1,
+        range=[0.5, max_rounds + 0.5]
+    )
+    fig.update_yaxes(
+        title_text="Rang",
+        row=2, col=1,
+        autorange="reversed",
+        tickmode='linear',
+        tick0=1,
+        dtick=1
+    )
+
     # X-axis for cumulative timeline: show all games if <= 25, otherwise every 2nd
     max_games = df_points_sorted['continuous_game_index'].max() if not df_points_sorted.empty else 0
     game_tick_interval = 1 if max_games <= 25 else 2
     fig.update_xaxes(
         title_text="Spielnummer (alle Runden)", 
-        row=2, col=1, 
+        row=3, col=1, 
         dtick=game_tick_interval,
         tick0=1,
         range=[0.5, max_games + 1.5]
     )
-    fig.update_yaxes(title_text="Gesamtpunktzahl", row=2, col=1)
+    fig.update_yaxes(title_text="Gesamtpunktzahl", row=3, col=1)
 
     fig.update_xaxes(
-        row=3, col=1,
+        row=4, col=1,
         tickfont=dict(size=14)
     )
-    fig.update_yaxes(title_text="Nettopunkte", row=3, col=1)
+    fig.update_yaxes(title_text="Nettopunkte", row=4, col=1)
     
     fig.update_xaxes(
-        row=3, col=2,
+        row=4, col=2,
         tickfont=dict(size=14)
     )
 
