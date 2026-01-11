@@ -2,17 +2,6 @@
 
 Cross-platform Mahjongg score calculator built with Kivy.
 
-## 📖 Table of Contents
-
-- [Download Pre-Built Executables](#-download-pre-built-executables)
-- [Automated Releases (GitHub Actions)](#-automated-releases-github-actions)
-- [Windows Installation & Build](#windows-installation-guide)
-- [Linux Installation & Build](#linux-installation-guide)
-- [Key Differences Between Platforms](#key-differences-between-platforms)
-- [Development Quick Reference](#development-quick-reference)
-
----
-
 ## 📥 Download Pre-Built Executables
 
 **Don't want to build from source?** Download ready-to-run executables from the [Releases page](../../releases).
@@ -26,7 +15,7 @@ Cross-platform Mahjongg score calculator built with Kivy.
 - Python 3.12 or higher ([Download from python.org](https://www.python.org/downloads/))
   - ✅ Make sure to check "Add Python to PATH" during installation
 
-### Building the Windows Executable
+### Building the Executable (Windows)
 
 #### Prerequisites
 Make sure you have PyInstaller installed:
@@ -46,3 +35,6 @@ pip install kivy_deps.sdl2 kivy_deps.glew
 - `--windowed`: Hide console window when running
 - `--icon`: Set .exe icon
 - `--name`: Set output .exe name
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
