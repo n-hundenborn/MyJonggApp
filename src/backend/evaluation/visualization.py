@@ -139,8 +139,8 @@ def create_html_dashboard(
     """
 
     # Save to file
-    # use parent foldername to create filename
-    html_file = 'Auswertung_' + output_path.parent.name + '.html'
+    # use foldername to create filename
+    html_file = 'Auswertung_' + output_path.name + '.html'
     filepath = output_path / html_file
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(html_content)
