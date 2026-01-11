@@ -50,17 +50,3 @@ exe = EXE(
     entitlements_file=None,
     icon='assets\\icon.ico',
 )
-
-# Comment out COLLECT section for single-file executable
-# coll = COLLECT(
-#     exe,
-#     a.binaries,
-#     a.zipfiles,
-#     a.datas,
-#     *[Tree(p) for p in (sdl2.dep_bins + glew.dep_bins)],
-#     strip=False,
-#     upx=True,
-#     upx_exclude=[],
-#     name='app',
-# )
-
